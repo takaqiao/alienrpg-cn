@@ -1,0 +1,84 @@
+{
+  "id": "alienrpg-cn",
+  "title": "Alien Evolved - 简体中文 [非官方]",
+  "description": "Alien Evolved（alienrpg）系统的非官方简体中文汉化中枢：覆盖系统界面字符串、翻译系统自带的 Alien RPG System 合集包、为 MU-TH-UR / Motion Tracker / Token Action Hud Alien / Babele 四个插件补中文语言文件、注入 CJK 字体回退，并注册全项目**唯一**的 Babele 全局 mapping 层。新手包与核心书的正文另有两个独立模块。Unofficial Simplified Chinese localization hub for the Alien Evolved system.",
+  "authors": [
+    {
+      "name": "Taka"
+    }
+  ],
+  "version": "0.1.0",
+  "url": "https://github.com/takaqiao/alienrpg-cn",
+  "manifest": "https://github.com/takaqiao/alienrpg-cn/releases/latest/download/module.json",
+  "download": "https://github.com/takaqiao/alienrpg-cn/releases/download/v0.1.0/module.zip",
+  "compatibility": {
+    "minimum": "13",
+    "verified": "14",
+    "maximum": "14.999"
+  },
+  "esmodules": [
+    "register.js",
+    "scripts/alienrpg-hardcoded-cn.mjs",
+    "scripts/plugins-hardcoded-cn.mjs"
+  ],
+  "languages": [
+    {
+      "lang": "cn",
+      "name": "中文",
+      "path": "lang/cn.json"
+    },
+    {
+      "lang": "cn",
+      "name": "中文 (MU-TH-UR)",
+      "path": "lang/plugins/muthur-cn.json",
+      "module": "alien-mu-th-ur"
+    },
+    {
+      "lang": "cn",
+      "name": "中文 (Motion Tracker)",
+      "path": "lang/plugins/motiontracker-cn.json",
+      "module": "motion_tracker"
+    },
+    {
+      "lang": "cn",
+      "name": "中文 (Token Action Hud Alien)",
+      "path": "lang/plugins/tah-alien-cn.json",
+      "module": "token-action-hud-alien"
+    },
+    {
+      "lang": "cn",
+      "name": "中文 (Babele)",
+      "path": "lang/plugins/babele-cn.json",
+      "module": "babele"
+    }
+  ],
+  "styles": [
+    {
+      "src": "styles/alienrpg-cn.css",
+      "layer": "modules"
+    }
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "alienrpg",
+        "type": "system",
+        "compatibility": {
+          "minimum": "4.1.13",
+          "verified": "4.1.13"
+        }
+      }
+    ],
+    "requires": [
+      {
+        "id": "babele",
+        "type": "module",
+        "compatibility": {
+          "minimum": "2.9.1"
+        }
+      }
+    ]
+  },
+  "bugs": "https://github.com/takaqiao/alienrpg-cn/issues",
+  "changelog": "https://github.com/takaqiao/alienrpg-cn/releases/tag/v0.1.0"
+}

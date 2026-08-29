@@ -1,0 +1,217 @@
+name: Release
+
+# tag 触发。三个汉化仓统一带 `v` 前缀（v0.1.0），module.json 里存的是**不带 v** 的版本号。
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read tag version
+        id: version
+        run: |
+          TAG="${GITHUB_REF##*/}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Verify module.json version matches tag
+        run: |
+          MJ_VERSION=$(jq -r .version module.json)
+          if [ "$MJ_VERSION" != "${{ steps.version.outputs.version }}" ]; then
+            echo "::error::module.json version ($MJ_VERSION) != tag (${{ steps.version.outputs.version }})"
+            exit 1
+          fi
+          echo "module.json version matches tag: $MJ_VERSION"
+
+      - name: Verify download URL points to this tag
+        run: |
+          DOWNLOAD=$(jq -r .download module.json)
+          EXPECTED=".*/releases/download/${{ steps.version.outputs.tag }}/module.zip"
+          if ! echo "$DOWNLOAD" | grep -qE "$EXPECTED"; then
+            echo "::error::module.json download URL ($DOWNLOAD) does not match expected pattern $EXPECTED"
+            exit 1
+          fi
+          echo "download URL ok: $DOWNLOAD"
+
+      - name: Verify changelog URL points to this tag
+        run: |
+          CHANGELOG=$(jq -r .changelog module.json)
+          EXPECTED=".*/releases/tag/${{ steps.version.outputs.tag }}$"
+          if ! echo "$CHANGELOG" | grep -qE "$EXPECTED"; then
+            echo "::error::module.json changelog URL ($CHANGELOG) does not match expected pattern $EXPECTED"
+            exit 1
+          fi
+          echo "changelog URL ok: $CHANGELOG"
+
+      - name: Verify every declared file actually exists
+        run: |
+          # module.json 声明了却不存在的 esmodule / lang / style，Foundry 只会在
+          # 控制台丢一行 404 —— 用户看到的是「装了没反应」。发版前挡住。
+          FAIL=0
+          for f in $(jq -r '.esmodules[]?' module.json) \
+                   $(jq -r '.languages[]?.path' module.json) \
+                   $(jq -r '.styles[]?.src' module.json); do
+            if [ ! -f "$f" ]; then echo "::error::module.json 声明了不存在的文件: $f"; FAIL=1; fi
+          done
+          exit $FAIL
+
+      - name: Verify there is actually something to ship
+        run: |
+          # 2-/3- 两仓有这道闸（compendium/cn 不能为空），1- 原本没有，于是骨架阶段的
+          # 空 lang/cn.json（3 字节的 `{}`）+ 四份空 plugins/*.json + 空 compendium/cn
+          # 可以一路打成正式发布包，装上去毫无反应而且不报错。
+          #
+          # 判据挑「lang/cn.json 有正文」而不是「compendium/cn 非空」：本仓的最小可用
+          # 形态是**只翻界面**（Babele 没启用时 lang/ 与 styles/ 照样生效，见
+          # register.js:111 的 early-return），所以合集译文允许暂缺，界面译文不允许。
+          #
+          # ── 三段判据缺一不可，理由是实测出来的（jq 1.7.1，2026-08-29）──
+          # 只写 `CN_KEYS=$(jq '[paths(scalars)]|length' …); if [ "$CN_KEYS" -eq 0 ]`
+          # 是**放行 0 字节和纯空白文件**的：
+          #   · jq 对空输入/纯空白输入是「零个输入值」，**不报错**，退出码 0，输出为空；
+          #   · 于是 CN_KEYS="" ，`[ "" -eq 0 ]` 只往 stderr 打一行
+          #     `integer expression expected` 并返回 2；
+          #   · 而 `set -e` 对**用作 if 条件**的命令不生效（POSIX 明文豁免），
+          #     所以 if 走 else 分支，闸门整个失效。
+          # 实测：0 字节 → rc=0 放行，纯空白 → rc=0 放行，`{}` → 才拦得住。
+          set -eo pipefail
+
+          # (1) 存在且非 0 字节。
+          if [ ! -s lang/cn.json ]; then
+            echo "::error::lang/cn.json 不存在或是 0 字节，拒绝发布"
+            exit 1
+          fi
+          # (2) 能解析、且顶层是对象。`jq -e` 在这四种坏形状上分别退 4/4/1/5：
+          #     纯空白=4（无输出）、空文件=4、顶层数组或 null=1（假值）、语法错=5。
+          if ! jq -e 'type == "object"' lang/cn.json > /dev/null 2>&1; then
+            echo "::error::lang/cn.json 不是 JSON 对象（解析失败 / 纯空白 / 顶层是数组或 null），拒绝发布"
+            exit 1
+          fi
+          # (3) 至少一条**非空白字符串**叶子。`{"a":""}` / `{"a":"   "}` 这种
+          #     「键在、正文空」的形态在 (1)(2) 全过，必须单独拦。
+          #     顺带记一条 jq 语义：`paths(scalars)` **不会**列出值为 null 的叶子
+          #     （paths(f) 内层是 select(getpath($p)|f)，null 在 select 里是假值），
+          #     所以 `{"a":null}` 也算 0 条 —— 与 localize() 对 null 的处理一致
+          #     （localization.mjs:437 `typeof translation !== "string"` 即回落）。
+          CN_KEYS=$(jq '[paths(scalars) as $p | getpath($p) | strings | select(test("[^[:space:]]"))] | length' lang/cn.json)
+          if [ "${CN_KEYS:-0}" -lt 1 ]; then
+            echo "::error::lang/cn.json 里没有任何非空白的字符串译文，拒绝发布"
+            exit 1
+          fi
+          echo "lang/cn.json 非空白译文叶子数: $CN_KEYS"
+
+          # babele-mappings.js 是生成文件；空壳等于合集正文只走 Babele 内置默认映射。
+          if ! grep -q '"Adventure"' babele-mappings.js; then
+            echo "::error::babele-mappings.js 尚未生成（DOCUMENT_MAPPINGS 里没有 Adventure），拒绝发布"
+            exit 1
+          fi
+          echo "babele-mappings.js 已生成"
+
+      - name: Assert compendium/cn holds no Babele mapping filename
+        run: |
+          # translation/translation-source.js:14-15 里 MAPPING_FILENAME = "mappings.json"、
+          # LEGACY_MAPPING_FILENAME = "mapping.json"；:115-126 的 #matchesKind 就靠**文件名**
+          # 把目录里的 .json 分流成 mapping 还是译文。本模块注册的 compendium/cn 同时是
+          # translationDirectories 和 mappingDirectories（translation-source-registry.js:61-62），
+          # 所以这两个名字在这个目录里是保留字：
+          #   · 取这两个名字的**译文**会被静默当 mapping 吃掉，一个字都不翻，且不报错；
+          #   · 取这两个名字的**mapping** 进 loadedMappings，会压过中枢 registerMapping
+          #     注册的全局层（document-mappings.js:267-278 的叠加顺序）。
+          # 本项目的 mapping 一律走 alienrpg-cn/babele-mappings.js，这里必须为空。
+          BAD=$(find compendium/cn -maxdepth 1 \( -name 'mappings.json' -o -name 'mapping.json' \) 2>/dev/null || true)
+          if [ -n "$BAD" ]; then
+            echo "::error::compendium/cn 里出现了 Babele 的 mapping 保留文件名: $BAD"
+            exit 1
+          fi
+          echo "compendium/cn 无 mapping 保留文件名"
+
+      - name: Build module.zip
+        run: |
+          # ── rm -f 必须在 zip -r **之前** ──
+          # zip 对已存在的同名档案是**追加更新**、不是重建。仓库里若留着上一版的
+          # module.zip，旧内容会原样活到新包里。EC 项目就这么把 22 MB 的陈旧副本
+          # （含一份损坏的译文）混进过一次正式发布。
+          #
+          # 排除清单逐条理由：
+          #   compendium/en/*            英文基准，只用于算 drift，装进去等于让用户白下一倍体积
+          #   lang/en.json               lang_gap.py 的 OLD 基准；且**故意不在 languages 里声明** ——
+          #                              声明了等于用冻结快照永久覆盖上游英文
+          #   lang/_baseline.json        上面那份快照的溯源元数据，运行时无人读
+          #   lang/lang_keep_english.json 保持英文的两张表（keep_english 写英文串 /
+          #                              never_write 一个字都不写）+ 逐条理由，只给 QA 脚本用
+          #   .github/* .gitignore       仓库设施
+          #   *.py __pycache__ *.pyc     维护脚本及其中间产物
+          #
+          # ⚠ **不排除 scripts/**：本仓的 scripts/ 是**随包发**的（module.json 的
+          #   esmodules 里就有 scripts/alienrpg-hardcoded-cn.mjs 与
+          #   scripts/plugins-hardcoded-cn.mjs）。同名目录在别的仓可能全是维护脚本，
+          #   排除清单**不可跨仓照抄**。
+          rm -f module.zip
+          zip -r module.zip . \
+            -x ".git/*" \
+            -x ".github/*" \
+            -x ".gitignore" \
+            -x "release/*" \
+            -x "compendium/en/*" \
+            -x "compendium/en/" \
+            -x "compendium/en" \
+            -x "lang/en.json" \
+            -x "lang/_baseline.json" \
+            -x "lang/lang_keep_english.json" \
+            -x "*.py" \
+            -x "__pycache__/*" \
+            -x "*/__pycache__/*" \
+            -x "*.pyc" \
+            -x "*.zip" \
+            -x "*.bak" \
+            -x ".DS_Store" \
+            -x "Thumbs.db"
+          ls -la module.zip
+
+      - name: Assert excluded content is really absent
+        run: |
+          # 用 `unzip -Z1`（只列成员名）而不是 `unzip -l`：后者带一行
+          # `Archive:  module.zip` 表头，任何匹配 `.zip` 的模式都会打在自己的表头上。
+          # 这里刻意**不**断言 `^scripts/` —— 见上一步的说明。
+          if unzip -Z1 module.zip | grep -E "^compendium/en/|^lang/en\.json$|^lang/_baseline\.json$|lang_keep_english\.json|^release/|__pycache__|\.py$|\.zip$"; then
+            echo "::error::发布包里混进了应当排除的文件（见上）"
+            exit 1
+          fi
+          echo "排除清单核对通过"
+          # 反向断言：该在的必须在
+          #
+          # templates/alienrpg/** 是 alienrpg-hardcoded-cn.mjs 通道 B 在 init 阶段
+          # **fetch 回来**再抢注的译文模板。少一份，getTemplate 就照常去服务器取上游
+          # 英文原件 —— 界面回落英文，**不报错、不白屏**，也就是说漏发这两个文件在
+          # 运行时是完全静默的。只能在打包这一步挡。
+          for f in module.json register.js babele-mappings.js lang/cn.json \
+                   scripts/alienrpg-hardcoded-cn.mjs scripts/plugins-hardcoded-cn.mjs \
+                   styles/alienrpg-cn.css \
+                   templates/alienrpg/actor/creature-header.hbs \
+                   templates/alienrpg/actor/planet-general.hbs; do
+            unzip -Z1 module.zip | grep -qx "$f" || { echo "::error::发布包缺少 $f"; exit 1; }
+          done
+          echo "必备文件核对通过"
+          unzip -l module.zip | tail -10
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.version }}
+          body_path: .github/release-body-template.md
+          fail_on_unmatched_files: true
+          files: |
+            module.json
+            module.zip

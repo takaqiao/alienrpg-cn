@@ -1,0 +1,11 @@
+{
+  "package": "alienrpg",
+  "packageType": "system",
+  "packageVersion": "4.1.13",
+  "file": "lang/en.json",
+  "capturedAt": "2026-08-29",
+  "sha256": "abc33792c6142663613ffbb8bd43c61a73cb778f32d5376b9e74dc1b70afac96",
+  "bytes": 31192,
+  "flattenedKeys": 590,
+  "note": "lang/en.json 是本仓的英文基准快照，供 4-常用脚本/qa/lang_gap.py 当 OLD 基准算 drift。进 git，不进发布 zip，且**不在 module.json 的 languages 里声明** —— 声明了等于用冻结快照永久覆盖上游英文。"
+}

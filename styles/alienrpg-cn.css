@@ -1,0 +1,198 @@
+/*
+ * alienrpg-cn.css —— 中文字形回退与排版修正
+ *
+ * ══════════════════════════════════════════════════════════════════════
+ * 一、问题（已实测，不是推断）
+ * ══════════════════════════════════════════════════════════════════════
+ * alienrpg 4.1.13 的主字体是 OCR-A，定义在
+ *     systems/alienrpg/css/alienrpg.css:24-28
+ *         @font-face { font-family: "OCR-A"; src: url("../fonts/ocraext.ttf"); }
+ *     systems/alienrpg/css/alienrpg.css:45-48
+ *         :root { --alienfont: 'OCR-A'; --fontsize: 15px; }
+ * 解析 systems/alienrpg/fonts/ocraext.ttf 的 cmap：**248 个码位，CJK 0 个**
+ * （U+3000-303F / U+4E00-9FFF / U+3400-4DBF / U+FF00-FFEF 全部为 0）。
+ * 而 `--alienfont` 的值**只有一个族名，后面连 `monospace` 这样的通用族都没有**，
+ * 所以中文字符会逐字形掉到浏览器的默认字体上 —— Windows 上通常是宋体，字重、
+ * 字宽、基线都和周围的 OCR-A 终端风格对不上。
+ *
+ * 同一文件里还有 6 处**绕开 `--alienfont` 的硬编码字体栈**（本机 4.1.13 逐行复核）：
+ *     :581   .tooltip2 .tooltiptext2                    "Times New Roman", Times, serif
+ *     :5063  .mess                                      "Courier New", Courier, monospace
+ *     :5610  .colonytable                               "OCR-A"
+ *     :6172  .alienrpg .textarea5                       OCR-A            （裸的，无引号）
+ *     :6180  .alienrpg form .sheet-content .click-stat-level   "Roboto", system, -apple-system, sans-serif
+ *     :6196  .alienrpg .click-stat-level .fas                 "Roboto", system, -apple-system, sans-serif
+ * 前五处末端**没有任何中文族**（:5610 与 :6172 连通用族都没有）；:581 有 `serif`
+ * 兜底，掉的是系统默认衬线体 —— 观感与周围终端风格仍然对不上，故一并补。
+ * 聊天卡走 `--alienchatfont`（:62 与 :6007，值为 "Blinker", sans-serif），
+ * 末端有 `sans-serif` 兜底，情况比 `--alienfont` 好，但仍未指定中文族。
+ *
+ * ── 做法 ──
+ * 不替换原字体，只在回退链**后面**补中文族。浏览器的字体回退是**逐字形**的，
+ * 拉丁字母仍由 OCR-A / Roboto / Blinker 渲染，只有中文字符落到后面的中文字体上，
+ * 系统原本的终端观感得以保留。
+ *
+ * 不打包字体：一套中文字体动辄 10 MB 以上；不挂 Google Fonts：国内取不到，
+ * 会静默失败并拖慢加载。因此只用系统已装的字体，按 Windows / macOS / Linux 排列。
+ *
+ * ══════════════════════════════════════════════════════════════════════
+ * 二、为什么这里的 !important 不是偷懒
+ * ══════════════════════════════════════════════════════════════════════
+ * Foundry v14 的级联层顺序（public/css/foundry2.css:5）：
+ *     reset, variables, elements, blocks, applications, compatibility,
+ *     layouts, system, modules, exceptions
+ * 本模块 module.json 把本文件声明为 {"src": …, "layer": "modules"}，落在 modules 层，
+ * 排在 system 层之后 —— 单看这一点我们赢。
+ *
+ * 但 systems/alienrpg/system.json 的 styles 写的是**裸字符串** `["css/alienrpg.css"]`，
+ * 经 common/packages/base-package.mjs:656-661 的 `_migrateStyles` 迁移成
+ * `[{src: "css/alienrpg.css"}]`，`layer` 字段是 `initial: undefined`
+ * （同文件 :363）。「undefined 的 layer 到底发的是 layer(system) 还是裸 @import」
+ * 由服务端视图决定，而那段代码在本机的已编译产物里查不到，**无法在源码层面确证**。
+ * 若它发的是裸 @import，未分层的普通声明排在**所有层之上**，我们就输了。
+ *
+ * `!important` 把胜负从这条查不实的假设上摘下来：作者来源内 important 恒压 normal，
+ * 与层次无关；而上游这几条字体声明**都不带 !important**（已逐条确认），
+ * 所以一个 !important 在两种可能下都稳赢。
+ * 自定义属性同样支持 !important，且作用于该属性自身的级联。
+ *
+ * ⚠ 反过来也要记住：important 声明的层次顺序是**反的**（靠前的层赢）。所以将来
+ * 若上游给这些声明补了 !important，我们**加不加 !important 都赢不了**，
+ * 届时只能提特异性或改走别的选择器 —— 别再往上叠 !important。
+ */
+
+/* ── 中文族栈：Windows → macOS → Linux，全部只用系统预装字体 ─────────────── */
+:root {
+  /* 等宽优先：OCR-A 是终端脸，中文侧优先挑等宽中文字体，挑不到再退比例字体 */
+  --alien-cjk-mono: "Sarasa Mono SC", "Noto Sans Mono CJK SC", "Source Han Mono SC",
+    "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC",
+    "WenQuanYi Micro Hei", "SimHei";
+  --alien-cjk-sans: "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB",
+    "Noto Sans CJK SC", "Source Han Sans SC", "WenQuanYi Micro Hei", "SimHei";
+
+  /* 上游 :46 只有 'OCR-A'，末端连通用族都没有；这里补中文族并补上 monospace 兜底 */
+  --alienfont: "OCR-A", "Sarasa Mono SC", "Noto Sans Mono CJK SC", "Source Han Mono SC",
+    "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", "Source Han Sans SC",
+    "WenQuanYi Micro Hei", "SimHei", monospace !important;
+
+  /* 上游 :62 / :6007 是 "Blinker", sans-serif */
+  --alienchatfont: "Blinker", "Microsoft YaHei", "PingFang SC", "Hiragino Sans GB",
+    "Noto Sans CJK SC", "Source Han Sans SC", "WenQuanYi Micro Hei", "SimHei",
+    sans-serif !important;
+}
+
+/* ── 上游 6 处绕开变量的硬编码字体栈，逐条补中文族 ────────────────────────── */
+
+/* systems/alienrpg/css/alienrpg.css:571-583（.tooltip2 的悬浮框，唯一带 serif 兜底的一处） */
+.tooltip2 .tooltiptext2 {
+  font-family: "Times New Roman", Times, "Noto Serif CJK SC", "Source Han Serif SC",
+    "Songti SC", "SimSun", "WenQuanYi Micro Hei", serif !important;
+}
+
+/* systems/alienrpg/css/alienrpg.css:5061-5064 */
+.mess {
+  font-family: "Courier New", Courier, var(--alien-cjk-mono), monospace !important;
+}
+
+/* :5603-5611 */
+.colonytable {
+  font-family: "OCR-A", var(--alien-cjk-mono), monospace !important;
+}
+
+/* :6168-6173（上游此处族名裸写，无引号） */
+.alienrpg .textarea5 {
+  font-family: "OCR-A", var(--alien-cjk-mono), monospace !important;
+}
+
+/* :6174-6182 与 :6191-6197 */
+.alienrpg form .sheet-content .click-stat-level,
+.alienrpg .click-stat-level .fas {
+  font-family: "Roboto", var(--alien-cjk-sans), system, -apple-system, sans-serif !important;
+}
+
+/*
+ * ══════════════════════════════════════════════════════════════════════
+ * 三、MU-TH-UR（alien-mu-th-ur 2.0.0）—— 唯一必须靠 !important 才够得着的插件
+ * ══════════════════════════════════════════════════════════════════════
+ * 该模块**没有任何 CSS 文件**，全部样式是 JS 里 `element.style.cssText = \`…\``
+ * 逐个元素注入的**内联样式**。内联样式的优先级高于任何选择器规则，唯一能压过它的
+ * 是带 !important 的样式表规则。
+ *
+ * 实测（本机 modules/alien-mu-th-ur/，逐文件计数，与调查报告的数字略有出入，
+ * 以本处为准）：
+ *   scripts/main.js        —— "monospace" 共 46 处 = 38 处 `font-family: monospace`
+ *                             + 6 处 `font-family:monospace`（无空格）
+ *                             + 2 处 `font-family: 'Courier New', monospace`（:5103 / :5503）
+ *   scripts/spectateurs.js —— 4 处 `font-family: monospace`（:67 / :77 / :86 / :96）
+ *   scripts/spectator-fix.js —— 4 处，但**该文件不在 module.json 的 esmodules 里**
+ *                             （esmodules = greensock/esm/all.js, scripts/main.js,
+ *                             scripts/spectateurs.js），永不加载，不必管。
+ * 即**实际生效的是 50 处**。另有 :5290 一处 `'Arial Black', sans-serif`，
+ * sans-serif 兜底已够用，不动。
+ *
+ * ── 作用域纪律 ──
+ * 下面的选择器**只列 MU-TH-UR 自己创建的元素 id**，逐个在源码里核对过创建点，
+ * 因此不可能漏到别的模块上。刻意**不写** `#hack-progress-container`
+ * （main.js:5335）这种没有命名空间前缀的 id —— 它太通用，别的包极可能撞名；
+ * 它只作为上面几个容器的后代被覆盖，若某天它被直接挂到 body 上就保持不管。
+ *
+ * id 创建点（全部为 `element.id = '…'`）：
+ *   main.js:22   muthur-boot-sequence        main.js:1010/1032 muthur-chat-container
+ *   main.js:384  muthur-glitch-overlay       main.js:1528      muthur-waiting-container
+ *   main.js:1703 gm-muthur-container         main.js:1803      gm-muthur-help-panel
+ *   main.js:2201 muthur-spectator-dialog     main.js:2383      muthur-spectator-container
+ *   main.js:5044 cerberus-floating-window    main.js:5249      cerberus-death-screen
+ *   spectateurs.js:56  muthur-waiting-container   spectateurs.js:492 muthur-alarm-overlay
+ */
+#muthur-chat-container,
+#muthur-chat-container *,
+#muthur-boot-sequence,
+#muthur-boot-sequence *,
+#muthur-waiting-container,
+#muthur-waiting-container *,
+#muthur-spectator-dialog,
+#muthur-spectator-dialog *,
+#muthur-spectator-container,
+#muthur-spectator-container *,
+#muthur-alarm-overlay,
+#muthur-alarm-overlay *,
+#gm-muthur-container,
+#gm-muthur-container *,
+#gm-muthur-help-panel,
+#gm-muthur-help-panel *,
+#cerberus-floating-window,
+#cerberus-floating-window *,
+#cerberus-death-screen,
+#cerberus-death-screen * {
+  font-family: "Sarasa Mono SC", "Noto Sans Mono CJK SC", "Source Han Mono SC",
+    "Courier New", "Microsoft YaHei", "PingFang SC", "WenQuanYi Micro Hei",
+    monospace !important;
+}
+
+/*
+ * MU-TH-UR 的打字机效果按 UTF-16 码元推进（main.js:862-871 的 `text[i]`），
+ * BMP 内的汉字是单码元，逐字出字正常，不需要额外处理。
+ */
+
+/*
+ * ══════════════════════════════════════════════════════════════════════
+ * 四、中文行高
+ * ══════════════════════════════════════════════════════════════════════
+ * 中文没有词间空格，行高压紧了会显得挤。这里**只**放到日志正文上，不动角色卡 ——
+ * 角色卡是像素级对位的终端布局，改行高会把格子顶开。
+ *
+ * ⚠ 选择器刻意抄上游自己的形状 `.sheet.journal-entry …`
+ * （systems/alienrpg/css/alienrpg.css:4945 就是这么写的，所以它确实命中），
+ * **没有**加 `.alienrpg` 前缀：日志表单是 Foundry 核心应用，DOM 上不带系统 id 类，
+ * 写了 `.alienrpg .journal-entry-content` 会一条都匹配不上。
+ * 代价是这条规则在别的系统的日志上也会生效 —— 可接受，因为本模块 relationships
+ * 只指向 alienrpg，装它的世界就是 alienrpg 世界。
+ *
+ * 不带 !important：`grep -n line-height css/alienrpg.css` 共 10 条
+ * （:136 :383 :422 :457 :475 :4374 :4457 :4785 :6183 :6199），没有一条落在
+ * journal-entry-content / journal-page-content 上，靠层次即可胜出。
+ */
+.sheet.journal-entry .journal-entry-content,
+.sheet.journal-entry .journal-page-content {
+  line-height: 1.75;
+}
