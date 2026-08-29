@@ -111,6 +111,55 @@ jobs:
           fi
           echo "lang/cn.json 非空白译文叶子数: $CN_KEYS"
 
+          # ── lang/plugins/*.json 也要查，理由是实测出来的 ──
+          # v0.1.0 就是这么发出去的：上面那道闸只看 lang/cn.json，于是骨架阶段留下的
+          # 四份 `{}` 空壳一路打进正式包，README 还把它们列进「已完成」。装了对应插件
+          # 的用户看不到任何中文，而且**不报错**——空 JSON 是合法 JSON。
+          #
+          # tah-alien-cn.json 是**故意为空**的：Token Action Hud Alien 的标签全是
+          # ALIENRPG.* 键（scripts/constants.js 的 ACTION_TYPE/GROUP/CONDITION 里存的就是键名），
+          # 翻了系统就等于翻了它，它自己的 languages/en.json 上游也只有 27 字节的 `{}`。
+          # 所以它进白名单，其余的必须有正文。
+          ALLOW_EMPTY="lang/plugins/tah-alien-cn.json"
+          for f in $(jq -r '.languages[]?.path' module.json); do
+            case "$f" in lang/plugins/*) ;; *) continue ;; esac
+            case " $ALLOW_EMPTY " in *" $f "*)
+              echo "  $f — 白名单（应为空）"; continue ;;
+            esac
+            if [ ! -s "$f" ] || ! jq -e 'type == "object"' "$f" > /dev/null 2>&1; then
+              echo "::error::$f 不存在 / 0 字节 / 不是 JSON 对象，拒绝发布"
+              exit 1
+            fi
+            N=$(jq '[paths(scalars) as $p | getpath($p) | strings | select(test("[^[:space:]]"))] | length' "$f")
+            if [ "${N:-0}" -lt 1 ]; then
+              echo "::error::$f 是空壳（0 条非空白译文）。要么补内容，要么从 module.json 的 languages 里摘掉，要么加进 ALLOW_EMPTY 并写明理由"
+              exit 1
+            fi
+            echo "  $f 非空白译文叶子数: $N"
+          done
+
+          # ── MOTHER.Keywords.* 是命令词表，不是文案 ──
+          # alien-mu-th-ur/scripts/main.js:1148/1152/1153/1156 是全模块**仅有**的四个读取点，
+          # 都只喂给 isSpecialOrder()/isCerberus() 做 includes 判定，永不渲染；而真正解析
+          # 编号的 handleSpecialOrder():4567-4579 用的是 12 条写死的 ASCII/法语正则剥前缀，
+          # 没有中文分支。把它们译成中文的后果不是「没翻到」，是**功能坏掉**：
+          #   `指令 937` 会被放行进特殊指令分支，然后 orderKey 落空 → commandNotFound；
+          #   没 hack 的玩家还会额外触发 MOTHER.AccessDenied + 给 GM 发一条
+          #   MUTHUR.SpecialOrderAttempt 入侵告警（一次误输入 = 一次假警报）。
+          # 所以这四个值必须逐字节钉死。上游 en.json 的值就是下面这四个。
+          MUTHUR_LANG="lang/plugins/muthur-cn.json"
+          if [ -f "$MUTHUR_LANG" ]; then
+            for pair in "Ordre=ORDER" "Special=SPECIAL" "Special2=SPECIAL" "Protocol=PROTOCOL"; do
+              k="${pair%%=*}"; want="${pair#*=}"
+              got=$(jq -r --arg k "$k" '(.MOTHER.Keywords[$k] // .["MOTHER.Keywords." + $k]) // "<<absent>>"' "$MUTHUR_LANG")
+              if [ "$got" != "$want" ]; then
+                echo "::error::$MUTHUR_LANG 的 MOTHER.Keywords.$k 是 '$got'，必须是 '$want'。这是 MU/TH/UR 的命令词表不是文案，翻了它会让特殊指令解析失效并给 GM 发假入侵告警。详见 README「MOTHER.Keywords.* 是命令词表」。"
+                exit 1
+              fi
+            done
+            echo "MOTHER.Keywords.* 命令词表未被翻译（4/4 与上游逐字节相同）"
+          fi
+
           # babele-mappings.js 是生成文件；空壳等于合集正文只走 Babele 内置默认映射。
           if ! grep -q '"Adventure"' babele-mappings.js; then
             echo "::error::babele-mappings.js 尚未生成（DOCUMENT_MAPPINGS 里没有 Adventure），拒绝发布"
@@ -197,10 +246,26 @@ jobs:
           # 运行时是完全静默的。只能在打包这一步挡。
           for f in module.json register.js babele-mappings.js lang/cn.json \
                    scripts/alienrpg-hardcoded-cn.mjs scripts/plugins-hardcoded-cn.mjs \
-                   styles/alienrpg-cn.css \
-                   templates/alienrpg/actor/creature-header.hbs \
-                   templates/alienrpg/actor/planet-general.hbs; do
+                   styles/alienrpg-cn.css; do
             unzip -Z1 module.zip | grep -qx "$f" || { echo "::error::发布包缺少 $f"; exit 1; }
+          done
+
+          # 抢注模板不写死清单，而是**从抢注代码里现推** ——
+          # 上面那份写死的清单在 multideck 那一轮就漏了：
+          # plugins-hardcoded-cn.mjs:167 新增了第三份抢注模板
+          # templates/multideck/link-manager.hbs，但清单没跟着加，
+          # 于是这道「该在的必须在」对新模板是**盲的**。
+          # 派生法保证以后每加一份抢注模板，这道闸自动跟上。
+          OVERRIDES=$(grep -ho "modules/alienrpg-cn/templates/[A-Za-z0-9_/.-]*\.hbs" \
+                        scripts/*.mjs | sed 's|^modules/alienrpg-cn/||' | sort -u)
+          if [ -z "$OVERRIDES" ]; then
+            echo "::error::从 scripts/*.mjs 里一份抢注模板都没推出来——派生失真，拒绝发布"
+            exit 1
+          fi
+          for f in $OVERRIDES; do
+            [ -f "$f" ] || { echo "::error::抢注代码指向 $f，但仓库里没有这个文件"; exit 1; }
+            unzip -Z1 module.zip | grep -qx "$f" || { echo "::error::发布包缺少抢注模板 $f"; exit 1; }
+            echo "  抢注模板在包内: $f"
           done
           echo "必备文件核对通过"
           unzip -l module.zip | tail -10

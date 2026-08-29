@@ -11,21 +11,30 @@
 Foundry VTT 的 **Alien Evolved**（`alienrpg`）系统简体中文汉化的**中枢模块**。
 界面字符串走 Foundry 原生 i18n，合集正文经 Babele 加载。
 
-> **当前状态：0.1.0 —— 系统层已完整，内容包尚未开工。**
+> **当前状态：0.2.0 —— 系统层完整，插件已补齐，内容包尚未开工。**
 >
 > ✅ **已完成**：系统界面 **600 个键**（`en.json` 的 590 个键覆盖 584 个，6 个有意保持英文）·
 > 系统自带合集 `alienrpg.alien-rpg-system` **全译**（81.8 KB：MU/TH/ER 使用说明 66K 字、
 > 三张恐慌/压力表、26 个物品、文件夹与宏名）· CJK 字体回退 · 运行时补丁。
 >
-> ⬜ **0.1.0 里还是空的**：`lang/plugins/` 下 MU-TH-UR（275 键）、Motion Tracker（69 键）、
-> Babele（102 键）三份语言文件**目前是空壳**，装了对应插件也看不到中文。0.2.0 会补上。
+> ✅ **插件语言文件（0.2.0 起随包出货）**：`lang/plugins/` 下 MU-TH-UR **276 键**
+> （上游 275 键全覆盖，另补一条上游 `en.json` 漏掉、但 `main.js:4868` 确实会读的
+> `MOTHER.commandNotFound`）、Motion Tracker **69 键**、Babele **102 键**，占位符与上游 1:1。
+> 另有 motion-tracker-multideck 与 terminal 两个**无 i18n 管线**的插件走运行时补丁。
+> ⚠ **v0.1.0 里这三份是 `{}` 空壳**（骨架残留，当时的发布闸只看 `lang/cn.json`）；
+> 用 v0.1.0 且装了对应插件的世界看不到中文，**升到 0.2.0 即可**。
 > （`tah-alien-cn.json` 例外：Token Action Hud Alien 的标签本来就全是 `ALIENRPG.*` 键，
-> 翻了系统就等于翻了它，那份文件本来就该是空的。）
+> 翻了系统就等于翻了它，那份文件本来就该是空的，**现在也仍然是空的**。）
 >
 > ⬜ **尚未开工**：新手包（34 万字）与核心书（229 万字）的正文。
 > 那是另外两个模块的事，**装不装本模块都不影响**——本模块的系统层自己是完整可用的。
 >
-> ⚠ **尚未做过实机冒烟测试。** 全部校验都是静态的（闸门、不变式、合并仿真）。
+> ✅ **0.2.0 已按 v0.1.0 的实机反馈重排界面用词**：21 个压力/恐慌状态名与 12 个面板标签
+> 全部收成两字并**按各自的规则描述重新取名**（`搞砸`→`失误`、`失去物品`→`脱手`、
+> `失去知觉`→`木僵`、`视野狭窄`→`恍惚`、`最远射程`→`射程`、`水`→`饮水` 等），
+> 日志条目名也已可译（`MU/TH/ER 使用说明`，由译名回退垫片兜住上游 5 处按英文名查找）。
+>
+> ⚠ **仍未做过完整实机冒烟。** v0.1.0 得到过一轮用户反馈（已全部处理），但下列面仍未验证：
 > 首次导入的名称查找、经典模式下的技能炫技按钮、Evolved/Classic 双世界的标签覆盖
 > 都还没有在真实世界里验证过。遇到问题请开 issue。
 
@@ -194,6 +203,34 @@ https://github.com/takaqiao/alienrpg-cn/releases/latest/download/module.json
 `languages/en.json` 就是 `{"tokenActionHud":{}}`（0 个键），它的所有标签都是
 `ALIENRPG.*` 与 `tokenActionHud.*` 两个**外部命名空间**的键 —— 翻译系统的
 `lang/cn.json` 就等于翻译了 HUD。这个文件保留为将来它自己长出键时的落点。
+
+### ⛔ `MOTHER.Keywords.*` 是命令词表，不是文案 —— 一个字都不许翻
+
+MU/TH/UR 终端的四个键 `MOTHER.Keywords.Ordre / Special / Special2 / Protocol`
+**必须与上游 `en.json` 逐字节相同**（`ORDER` / `SPECIAL` / `SPECIAL` / `PROTOCOL`）。
+
+它们不是给人看的字符串。`alien-mu-th-ur/scripts/main.js` 全模块只有四个读取点
+（`:1148 :1152 :1153 :1156`），全部形如
+
+```js
+const orderWords = [ game.i18n.localize('MOTHER.Keywords.Ordre').toUpperCase(), 'ORDER' ];
+```
+
+只喂给 `isSpecialOrder()` / `isCerberus()` 做 `includes` 判定，**永不渲染**。
+而真正把编号解析出来的 `handleSpecialOrder()`（`:4567-4579`）用的是 12 条写死的
+ASCII／法语正则剥前缀，**没有中文分支**。所以把它们译成中文的后果是：
+
+- `指令 937` 被 `isSpecialOrder()` 放行 → 走进特殊指令分支 → `orderKey` 仍是
+  `指令 937` → `orders[orderKey]` 落空 → 只弹一句 `MOTHER.commandNotFound`；
+- 对**没 hack 的玩家**更糟：放行后先撞 `MOTHER.AccessDenied`，同时给 GM 发一条
+  `MUTHUR.SpecialOrderAttempt` 入侵告警 —— 一次中文误输入变成一次假警报。
+
+玩家该敲的命令词本来就是英文（`HELP` / `SPECIAL ORDER 937` / `CERBERUS`），
+`MUTHUR.help` 与 `helpMenu.*` 里列的也是英文命令名，翻这四个键**没有任何收益**。
+
+判据由 `4-常用脚本/qa/gate_plugin_lang.mjs` 的 P8 组盯死：除了逐字节比对，还顺带
+复核「读取点仍是这四个」「剥前缀链里仍然没有非 ASCII 分支」「`MOTHER.Keywords.`
+在 `main.js` 里仍然只出现 4 次（即仍然只用于解析）」—— 上游哪天改了，闸门先红。
 
 ---
 

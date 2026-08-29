@@ -1,0 +1,135 @@
+{{!--
+  Scene Links settings window.
+
+  The JavaScript passes two main pieces of information to this template:
+  - links: the GM's current draft Scene links.
+  - scenes: every Foundry Scene available in the world.
+
+  data-* attributes are used instead of hard-coded element IDs because the GM may
+  create many Scene links and many matching points in the same window. The script
+  reads those attributes to know exactly which row a changed field belongs to.
+
+  ⚠ alienrpg-cn 汉化副本（抢注 partial）。上游 motion-tracker-multideck 1.0.2。
+    只改可见文本与 title/placeholder，标签骨架与 data-* 必须与上游逐标签相同。
+--}}
+<form class="motion-tracker-multideck">
+  {{!-- Plain-language instructions shown before any editable settings. --}}
+  <div class="md-help">
+    <p><strong>用这个界面告诉运动追踪器：哪些场景其实是同一个地点的不同层。</strong></p>
+    <p>先选好 <strong>场景 A</strong> 与 <strong>场景 B</strong>，再添加地图对位点，模块才知道两张地图是怎么对齐的。好的对位点是两个场景上都存在的梯子、升降机、楼梯井或传送点的中心。</p>
+    <p>如果两张地图朝向一致、尺寸与比例也相同，一个对位点通常就够了。若其中一张被旋转过或尺寸不同，用两个。若两张地图的拉伸比例不同，用三个。</p>
+    <p><strong>场景 B 相对场景 A 的高度差</strong>指两层之间的实际距离。例如场景 B 在场景 A 上方 3 米，就填 <code>3</code>。玩家只能看到信号的总距离，追踪器不会告诉他们信号在上方还是下方。</p>
+  </div>
+
+  {{!-- Every configured Scene link is rendered as one card. --}}
+  <div class="md-links">
+    {{#if links.length}}
+      {{#each links as |link li|}}
+        <section class="md-link" data-link-index="{{li}}">
+          <div class="md-link-header">
+            <h3>{{#if link.name}}{{link.name}}{{else}}场景链接 {{link.number}}{{/if}}</h3>
+            <button type="button" class="md-delete-link" data-link-index="{{li}}" title="删除这条场景链接">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+
+          {{!-- Basic settings for this one Scene-to-Scene connection. --}}
+          <div class="md-grid">
+            <div class="md-field">
+              <label>链接名称</label>
+              <input type="text" value="{{link.name}}" data-link-index="{{li}}" data-field="name" placeholder="例如：USCSS Chupacabra A/B" />
+            </div>
+            <div class="md-field">
+              <label>启用</label>
+              <input type="checkbox" {{#if link.enabled}}checked{{/if}} data-link-index="{{li}}" data-field="enabled" />
+            </div>
+
+            <div class="md-field">
+              <label>场景 A</label>
+              <select data-link-index="{{li}}" data-field="sceneA">
+                <option value="">— 选择场景 —</option>
+                {{#each ../scenes as |scene|}}
+                  <option value="{{scene.id}}" {{#if (eq scene.id link.sceneA)}}selected{{/if}}>{{scene.name}}</option>
+                {{/each}}
+              </select>
+            </div>
+            <div class="md-field">
+              <label>场景 B</label>
+              <select data-link-index="{{li}}" data-field="sceneB">
+                <option value="">— 选择场景 —</option>
+                {{#each ../scenes as |scene|}}
+                  <option value="{{scene.id}}" {{#if (eq scene.id link.sceneB)}}selected{{/if}}>{{scene.name}}</option>
+                {{/each}}
+              </select>
+            </div>
+
+            <div class="md-field">
+              <label>场景 B 相对场景 A 的高度差</label>
+              <input type="number" step="0.01" value="{{link.elevationDelta}}" data-link-index="{{li}}" data-field="elevationDelta" />
+            </div>
+            <div class="md-field">
+              <label>当信号正好在正上方或正下方时</label>
+              <select data-link-index="{{li}}" data-field="verticalBearing">
+                <option value="deterministic" {{#if (eq link.verticalBearing "deterministic")}}selected{{/if}}>在追踪器上固定朝一个方向显示</option>
+                <option value="center" {{#if (eq link.verticalBearing "center")}}selected{{/if}}>让信号点停在正中央</option>
+              </select>
+            </div>
+          </div>
+
+          {{!-- Matching points tell the module how the two map images line up. --}}
+          <div class="md-anchor-list">
+            <div class="md-anchor-header">
+              <strong>地图对位点</strong>
+              <button type="button" class="md-add-anchor" data-link-index="{{li}}">
+                <i class="fa-solid fa-plus"></i> 添加对位点
+              </button>
+            </div>
+
+            {{#if link.anchors.length}}
+              {{#each link.anchors as |anchor ai|}}
+                {{!-- One physical location, recorded once on Scene A and once on Scene B. --}}
+                <div class="md-anchor">
+                  <strong>#{{anchor.number}}</strong>
+
+                  <div class="md-coordinate-group">
+                    <strong>A</strong>
+                    <input type="number" step="0.01" value="{{anchor.a.x}}" placeholder="X" data-link-index="{{li}}" data-anchor-index="{{ai}}" data-side="a" data-axis="x" />
+                    <input type="number" step="0.01" value="{{anchor.a.y}}" placeholder="Y" data-link-index="{{li}}" data-anchor-index="{{ai}}" data-side="a" data-axis="y" />
+                    <span></span>
+                    <button type="button" class="md-capture" data-link-index="{{li}}" data-anchor-index="{{ai}}" data-side="a">
+                      <i class="fa-solid fa-crosshairs"></i> 在场景 A 上标点
+                    </button>
+                  </div>
+
+                  <div class="md-coordinate-group">
+                    <strong>B</strong>
+                    <input type="number" step="0.01" value="{{anchor.b.x}}" placeholder="X" data-link-index="{{li}}" data-anchor-index="{{ai}}" data-side="b" data-axis="x" />
+                    <input type="number" step="0.01" value="{{anchor.b.y}}" placeholder="Y" data-link-index="{{li}}" data-anchor-index="{{ai}}" data-side="b" data-axis="y" />
+                    <span></span>
+                    <button type="button" class="md-capture" data-link-index="{{li}}" data-anchor-index="{{ai}}" data-side="b">
+                      <i class="fa-solid fa-crosshairs"></i> 在场景 B 上标点
+                    </button>
+                  </div>
+
+                  <button type="button" class="md-delete-anchor" data-link-index="{{li}}" data-anchor-index="{{ai}}" title="删除这个对位点">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              {{/each}}
+            {{else}}
+              <p class="md-empty">尚未添加任何对位点。模块将假定两张地图本来就用同一套坐标。</p>
+            {{/if}}
+          </div>
+        </section>
+      {{/each}}
+    {{else}}
+      <p class="md-empty">尚未设置任何场景链接。</p>
+    {{/if}}
+  </div>
+
+  {{!-- Buttons that add another Scene connection or save the complete draft. --}}
+  <div class="md-actions">
+    <button type="button" class="md-add-link"><i class="fa-solid fa-plus"></i> 添加场景链接</button>
+    <button type="submit"><i class="fa-solid fa-floppy-disk"></i> 保存场景链接</button>
+  </div>
+</form>
