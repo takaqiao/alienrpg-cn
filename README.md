@@ -11,11 +11,22 @@
 Foundry VTT 的 **Alien Evolved**（`alienrpg`）系统简体中文汉化的**中枢模块**。
 界面字符串走 Foundry 原生 i18n，合集正文经 Babele 加载。
 
-> **当前状态：0.2.0 —— 系统层完整，插件已补齐，内容包尚未开工。**
+> **当前状态：0.2.3 —— 系统层完整，插件已补齐，内容包只差核心书。**
 >
 > ✅ **已完成**：系统界面 **600 个键**（`en.json` 的 590 个键覆盖 584 个，6 个有意保持英文）·
 > 系统自带合集 `alienrpg.alien-rpg-system` **全译**（81.8 KB：MU/TH/ER 使用说明 66K 字、
 > 三张恐慌/压力表、26 个物品、文件夹与宏名）· CJK 字体回退 · 运行时补丁。
+>
+> 🆕 **0.2.3：补上技能炫技与天赋正文。** `alien-evolved-starterset` 与
+> `alien-evolved-corerules` 各自带了 19 个 `ALIENRPG.*` 键（技能炫技清单 + 天赋描述），
+> 系统自己的 `en.json` 里没有，此前**整类未译**。现由
+> `lang/plugins/evolved-stunts-cn.json` 提供，两个模块共用同一份（上游两包逐字节相同）。
+>
+> 同时修了一条**中文下必然失效**的查找：经典角色卡的炫技按钮用
+> 「已本地化的技能名」拼 key（`character-sheet.mjs:1113`），英文下
+> `Close Combat → ALIENRPG.CloseCombat` 正好命中，中文下拼出的是
+> `ALIENRPG.近战` —— 上游没有这个键。本版额外提供 12 个中文键别名，
+> 内容与英文键逐字节相同。`4-常用脚本/qa/scan_stunt_aliases.py` 盯着它们别走散。
 >
 > ✅ **插件语言文件（0.2.0 起随包出货）**：`lang/plugins/` 下 MU-TH-UR **276 键**
 > （上游 275 键全覆盖，另补一条上游 `en.json` 漏掉、但 `main.js:4868` 确实会读的

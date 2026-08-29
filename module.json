@@ -7,10 +7,10 @@
       "name": "Taka"
     }
   ],
-  "version": "0.2.2",
+  "version": "0.2.3",
   "url": "https://github.com/takaqiao/alienrpg-cn",
   "manifest": "https://github.com/takaqiao/alienrpg-cn/releases/latest/download/module.json",
-  "download": "https://github.com/takaqiao/alienrpg-cn/releases/download/v0.2.2/module.zip",
+  "download": "https://github.com/takaqiao/alienrpg-cn/releases/download/v0.2.3/module.zip",
   "compatibility": {
     "minimum": "13",
     "verified": "14",
@@ -51,6 +51,18 @@
       "name": "中文 (Babele)",
       "path": "lang/plugins/babele-cn.json",
       "module": "babele"
+    },
+    {
+      "lang": "cn",
+      "name": "中文 (Evolved Starter Set 技能炫技)",
+      "path": "lang/plugins/evolved-stunts-cn.json",
+      "module": "alien-evolved-starterset"
+    },
+    {
+      "lang": "cn",
+      "name": "中文 (Evolved Core Rules 技能炫技)",
+      "path": "lang/plugins/evolved-stunts-cn.json",
+      "module": "alien-evolved-corerules"
     }
   ],
   "styles": [
@@ -81,5 +93,5 @@
     ]
   },
   "bugs": "https://github.com/takaqiao/alienrpg-cn/issues",
-  "changelog": "https://github.com/takaqiao/alienrpg-cn/releases/tag/v0.2.2"
+  "changelog": "https://github.com/takaqiao/alienrpg-cn/releases/tag/v0.2.3"
 }
