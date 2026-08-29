@@ -975,7 +975,17 @@ export function applyDocRules(rules, data) {
  * ⚠ `MU/TH/ER` 这个词元保持 ASCII：它是船载电脑的名字，MU-TH-UR 插件里也这么写。
  */
 const NAME_FALLBACKS = {
-  journal: [{ en: 'MU/TH/ER Instructions.', cn: 'MU/TH/ER 使用说明' }],
+  journal: [
+    { en: 'MU/TH/ER Instructions.', cn: 'MU/TH/ER 使用说明' },
+    // ── alien-evolved-starterset 的欢迎日志 ──
+    // init.js:121 与 :152 做 game.journal.getName(...).show()，**无守卫**。
+    // 译了名字而没有这条回退，startImport() 会在 createThumbs() 与写设置**之后**抛，
+    // 于是模块看着像导入成功了、但「如何使用」日志永远不弹，
+    // 且 Hooks.off('importAdventure') 永不执行 —— 那个钩子会在本次会话余下时间里
+    // 对任何后续 Adventure 导入重复触发。
+    // ⚑ LOCKSTEP：`cn` 必须与 2-新手包汉化插件/compendium/cn 里该日志的 `name` 逐字节相等。
+    { en: 'STARTER SET - HOW TO USE THIS MODULE', cn: '新手包 - 如何使用本模块' },
+  ],
 };
 
 /** 专属哨兵，与 NOTIFY_FLAG 及 plugins-hardcoded-cn.mjs 的任何图章都不同名。 */
