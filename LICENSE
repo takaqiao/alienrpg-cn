@@ -1,0 +1,59 @@
+MIT License
+
+Copyright (c) 2026 Taka
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+================================================================================
+SCOPE — WHAT THIS LICENSE DOES AND DOES NOT COVER
+适用范围 —— 本许可覆盖什么、不覆盖什么
+================================================================================
+
+The MIT grant above covers ONLY the original code and configuration authored
+for this repository: `register.js`, `babele-mappings.js`, everything under
+`scripts/` and `styles/`, `module.json`, the GitHub Actions workflow, and the
+documentation.
+以上 MIT 授权**只**覆盖本仓自己写的代码与配置：register.js、babele-mappings.js、
+scripts/ 与 styles/ 下的全部内容、module.json、GitHub Actions 工作流与文档。
+
+It does NOT cover the translated text.
+它**不**覆盖译文。
+
+The Simplified Chinese strings shipped in `lang/` and `compendium/` are a
+DERIVATIVE WORK of copyrighted material owned by third parties — the ALIEN
+roleplaying game and its Foundry VTT content are © Free League Publishing /
+Fria Ligan AB, and the ALIEN franchise is © 20th Century Studios. Nothing in
+this repository grants any right in that underlying work, and the translations
+may not be used in any way that the rights holders' own terms would not permit.
+This is an unofficial fan translation, is not endorsed by or affiliated with
+Free League Publishing, 20th Century Studios, Foundry Gaming LLC, or the
+authors of the ALIEN Evolved system and its modules, and it ships no art,
+audio, layout, or untranslated text from any of them — you must own the
+original packages for it to do anything at all.
+`lang/` 与 `compendium/` 中的简体中文文本是第三方版权作品的**衍生作品** ——
+ALIEN 桌上角色扮演游戏及其 Foundry VTT 内容版权归 Free League Publishing /
+Fria Ligan AB，ALIEN 系列版权归 20th Century Studios。本仓不授予、也无权授予
+原作的任何权利；译文的使用不得超出权利人自身条款所允许的范围。
+本项目是**非官方**爱好者翻译，与上述任何一方及 Foundry Gaming LLC、ALIEN
+Evolved 系统与相关模块的作者均无隶属关系、未经其审核，且**不包含**它们的任何
+美术、音频、排版或未翻译原文 —— 必须自行拥有原版包，本模块才有任何作用。
+
+If you are a rights holder and want this translation taken down, open an issue
+on the repository and it will be removed.
+若权利方要求下架，请在本仓提 issue，将予以移除。

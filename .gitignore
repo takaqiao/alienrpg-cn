@@ -1,0 +1,20 @@
+# ⚠⚠ 绝对不要往这个文件里加 `*.json` / `**/*.json` 这类规则 ⚠⚠
+#
+# 本仓的**全部产品**就是 JSON：compendium/{cn,en}/*.json、lang/*.json、module.json。
+# EC 项目曾经加过一条 `**/*.json`，把人工裁定过的调查结论整批吞掉且不可恢复。
+# 要忽略某个具体文件就写它的**完整路径**，永远不要用通配扩展名。
+
+# 构建产物：zip 对已存在的同名档案是追加更新，旧内容会活到新发布包里
+module.zip
+*.zip
+release/
+
+# 维护脚本的中间产物
+__pycache__/
+*.pyc
+*.bak
+
+# 系统垃圾文件
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,129 @@
+<section class='tab planetgeneral scrollable {{tab.cssClass}}' data-group='primary' data-tab='planetgeneral'>
+	<div style="background-image: url(systems/alienrpg/images/planet-sheet.webp); background-repeat: no-repeat; height: 848px">
+		<div class="grid-colony-planet1">
+			<span class="resource-label gcp4" style="font-size:smaller">恒星系</span>
+		</div>
+		<div class="grid-colony-planet2">
+			<h2 class="gcp14">
+				<input name='name' type='text' value='{{actor.name}}' style="height:26px;max-width: 351px; margin: 2px 0px 0px -2px" placeholder='{{localize "ALIENRPG.Name"}}' />
+			</h2>
+		</div>
+		<div class="grid-colony-planet3a">
+			<span class="resource-label gcp3a1">母恒星</span>
+			<span class="resource-label gcp3a7">辐射</span>
+		</div>
+		<div class="grid-colony-planet3">
+			<input class="gcp31 planetboxsize" style="max-width: 216px; margin: 5px 0px 0px -3px; text-align: center" type="text" name="system.attributes.parentstar" value="{{system.attributes.parentstar}}" data-dtype="String" />
+			<input class="gcp37 planetboxsize" style="max-width: 100px; margin: 3px 0px 0px 10px; text-align: center" type="text" name="system.attributes.radiation" value="{{system.attributes.radiation}}" data-dtype="String" />
+		</div>
+		<div class="grid-colony-planet4a">
+			<span class="resource-label gcp4a2" style="font-family: OCR-A; font-size: smaller">已勘测行星位序</span>
+			<span class="resource-label gcp4a3">气态巨行星</span>
+			<span class="resource-label gcp4a4">岩质<br />行星</span>
+			<span class="resource-label gcp4a5">冰质行星</span>
+			<span class="resource-label gcp4a6">小行星<br />带</span>
+		</div>
+		<div class="grid-colony-planet4">
+			<input class="gcp42 planetboxsize" style="max-width: 50px; margin: -10px 0px 0px 93px; text-align: center" type="text" name="system.attributes.planetposition.value" value="{{system.attributes.planetposition.value}}" data-dtype="Number" />
+			<input class="gcp43 planetboxsize" type="text" style="max-width: 50px; margin: 7px 0px 0px 35px; text-align: center" name="system.attributes.gasgiants.value" value="{{system.attributes.gasgiants.value}}" data-dtype="Number" />
+			<input class="gcp44 planetboxsize" type="text" style="max-width: 50px; margin: 4px 0px 0px 41px; text-align: center" name="system.attributes.rockyplanets.value" value="{{system.attributes.rockyplanets.value}}" data-dtype="Number" />
+			<input class="gcp45 planetboxsize" type="text" style="max-width: 50px; margin: -10px 0px 0px 50px; text-align: center" name="system.attributes.iceplanets.value" value="{{system.attributes.iceplanets.value}}" data-dtype="Number" />
+			<input class="gcp46 planetboxsize" type="text" style="max-width: 50px; margin: -13px 0px 0px 56px; text-align: center" name="system.attributes.asteroidbelts.value" value="{{system.attributes.asteroidbelts.value}}" data-dtype="Number" />
+		</div>
+		<div class="grid-colony-planet6a">
+			<span class="resource-label gcp6a1">行星大小</span>
+			<span class="resource-label gcp6a2">大气</span>
+			<span class="resource-label gcp6a4">水圈</span>
+			<span class="resource-label gcp6a6">昼长</span>
+			<span class="resource-label gcp6a7">轴倾角</span>
+		</div>
+		<div class="grid-colony-planet6">
+			<input class="gcp61 planetboxsize" style="max-width: 190px; margin: 10px 0px 0px 0px; text-align: center" type="text" name="system.attributes.planetsize" value="{{system.attributes.planetsize}}" data-dtype="String" />
+			<input class="gcp62 planetboxsize" style="max-width: 190px; margin: -9px 0px 0px -14px; text-align: center" type="text" name="system.attributes.atmosphere" value="{{system.attributes.atmosphere}}" data-dtype="String" />
+			<input class="gcp64 planetboxsize" style="max-width: 180px; margin: -26px 0px 0px -5px; text-align: center" type="text" name="system.attributes.hydrosphere" value="{{system.attributes.hydrosphere}}" data-dtype="String" />
+			<input class="gcp66 planetboxsize" style="max-width: 190px; margin: -9px 0px 0px -10px; text-align: center" type="text" name="system.attributes.daylength" value="{{system.attributes.daylength}}" data-dtype="String" />
+			<input class="gcp67 planetboxsize" style="max-width: 190px; margin: 10px 0px 0px 3px; text-align: center" type="text" name="system.attributes.axialtilt" value="{{system.attributes.axialtilt}}" data-dtype="String" />
+		</div>
+		<div class="grid-colony-planet7a">
+			<span class="resource-label gcp7a1">重力</span>
+			<span class="resource-label gcp7a2">气候</span>
+			<span class="resource-label gcp7a4">全球特征</span>
+			<span class="resource-label gcp7a6">轨道周期</span>
+			<span class="resource-label gcp7a7">行星性格</span>
+		</div>
+		<div class="grid-colony-planet7">
+			<input class="gcp71 planetboxsize" style="max-width: 190px; margin: 44px 0px 0px 4px; text-align: center" type="text" name="system.attributes.gravity" value="{{system.attributes.gravity}}" data-dtype="String" />
+			<input class="gcp72 planetboxsize" style="max-width: 190px; margin: 25px 0px 0px -8px; text-align: center" type="text" name="system.attributes.climate" value="{{system.attributes.climate}}" data-dtype="String" />
+
+			<textarea class="gcp74 colony-planet1 textarea5" name="system.attributes.globalfeature" rows="2" data-dtype="String">
+{{system.attributes.globalfeature}}</textarea>
+			<input class="gcp76 planetboxsize" style="max-width: 190px; margin: 25px 0px 0px -4px; text-align: center" type="text" name="system.attributes.orbitalperiod" value="{{system.attributes.orbitalperiod}}" data-dtype="String" />
+			<input class="gcp77 planetboxsize" style="max-width: 190px; margin: 44px 0px 0px 8px; text-align: center" type="text" name="system.attributes.personality" value="{{system.attributes.personality}}" data-dtype="String" />
+		</div>
+		<div class="grid-colony-planet8a">
+			<span class="resource-label gcp8a4">北极</span>
+		</div>
+		<div class="grid-colony-planet8">
+			<textarea class="gcp84 colony-planet2 textarea5" name="system.attributes.northpole" rows="4" data-dtype="String">{{system.attributes.northpole}}</textarea>
+		</div>
+		<div class="grid-colony-planet9">
+			<span class="resource-label gcp94">资源潜力</span>
+			<input class="gcp96" name="system.attributes.rpnorthpole" type="checkbox" {{checked system.attributes.rpnorthpole}} />
+		</div>
+		<div class="grid-colony-planet10a">
+			<span class="resource-label gcp10a1">
+				北半球<br />
+				西部
+			</span>
+			<span class="resource-label gcp10a4">赤道</span>
+			<span class="resource-label gcp10a7">
+				北半球<br />
+				东部
+			</span>
+		</div>
+		<div class="grid-colony-planet10">
+			<textarea class="gcp101 colony-planet2 textarea5" name="system.attributes.nhwest" rows="4" data-dtype="String">{{system.attributes.nhwest}}</textarea>
+			<textarea class="gcp104 colony-planet2 textarea5" name="system.attributes.equator" rows="4" data-dtype="String">{{system.attributes.equator}}</textarea>
+			<textarea class="gcp107 colony-planet2 textarea5" name="system.attributes.nheast" rows="4" data-dtype="String">{{system.attributes.nheast}}</textarea>
+		</div>
+
+		<div class="grid-colony-planet11">
+			<span class="resource-label gcp111">资源潜力</span>
+			<input class="gcp112" name="system.attributes.rpnhwest" type="checkbox" {{checked system.attributes.rpnhwest}} />
+			<span class="resource-label gcp113">资源潜力</span>
+			<input class="gcp114" name="system.attributes.rpequator" type="checkbox" {{checked system.attributes.rpequator}} />
+			<span class="resource-label gcp115">资源潜力</span>
+			<input class="gcp116" name="system.attributes.rpnheast" type="checkbox" {{checked system.attributes.rpnheast}} />
+		</div>
+
+		<div class="grid-colony-planet12a">
+			<span class="resource-label gcp12a1">
+				南半球<br />
+				西部
+			</span>
+			<span class="resource-label gcp12a4">南极</span>
+			<span class="resource-label gcp12a7">
+				南半球<br />
+				东部
+			</span>
+		</div>
+		<div class="grid-colony-planet12">
+			<textarea class="gcp121 colony-planet2 textarea5" name="system.attributes.shwest" rows="4" data-dtype="String">{{system.attributes.shwest}}</textarea>
+
+			<textarea class="gcp124 colony-planet2 textarea5" name="system.attributes.southpole" rows="4" data-dtype="String">{{system.attributes.southpole}}</textarea>
+			<textarea class="gcp127 colony-planet2 textarea5" name="system.attributes.sheast" rows="4" data-dtype="String">{{system.attributes.sheast}}</textarea>
+		</div>
+
+		<div class="grid-colony-planet13a">
+			<span class="resource-label gcp13a1">资源潜力</span>
+
+			<input class="gcp13a2" name="system.attributes.rpshwest" type="checkbox" {{checked system.attributes.rpshwest}} />
+
+			<span class="resource-label gcp13a3">资源潜力</span>
+			<input class="gcp13a4" name="system.attributes.rpsouthpole" type="checkbox" {{checked system.attributes.rpsouthpole}} />
+
+			<span class="resource-label gcp13a5">资源潜力</span>
+			<input class="gcp13a6" name="system.attributes.rpsheast" type="checkbox" {{checked system.attributes.rpsheast}} />
+		</div>
+	</div>
+</section>
