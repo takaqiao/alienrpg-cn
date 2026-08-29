@@ -85,6 +85,8 @@ https://github.com/takaqiao/alienrpg-cn/releases/latest/download/module.json
 | `lang/plugins/babele-cn.json` | Babele 自身设置界面的中文 | ✅ |
 | `scripts/alienrpg-hardcoded-cn.mjs` | 系统侧写死串的运行时补丁 | ✅ |
 | `scripts/plugins-hardcoded-cn.mjs` | 插件侧写死串的运行时补丁 | ✅ |
+| `scripts/retranslate-world.mjs` | 「重新汉化本世界」原地修复工具（设置菜单按钮 + 模块 API） | ✅ |
+| `data/DO-NOT-TRANSLATE.json` | 硬冻结登记表，修复工具在**运行时**加载；与 `7-其他内容/` 那份逐字节相同 | ✅ |
 | `styles/alienrpg-cn.css` | CJK 字形回退与排版修正 | ✅ |
 | `compendium/cn/*.json` | 合集译文 | ✅ |
 | `compendium/en/*.json` | 英文基准，只用于跨版本算 drift | ❌ |
@@ -319,6 +321,180 @@ temp3 = game.i18n.localize("ALIENRPG." + newLangStr);
 
 ---
 
+## 🛠 「重新汉化本世界」—— 已导入的世界里名字还是英文时用它
+
+**入口**：`配置设置 → 模块设置 → Alien Evolved - 简体中文 → 重新汉化本世界 → 打开修复面板`
+（仅 GM 可见，就在系统自己那个「Import Adventure / Re-Import」按钮旁边）
+
+**默认只试运行**。面板先列出它打算改什么，你看完再决定要不要点「执行」。
+
+### 什么时候需要它
+
+侧边栏里**文件夹 / 宏 / 随机表还是英文名**，但日志正文已经是中文 —— 这个组合是典型症状。
+也可能整个世界的合集内容都还是英文。两种都用它修。
+
+> **⚠ 先说清楚它修不到的那一部分。** 系统自带的三张表 —— `Panic Table` /
+> `Panic Response Table` / `Stress Response Table` —— **跑完还是英文名**，这不是工具的
+> 毛病：`compendium/cn/alienrpg.alien-rpg-system.json` 里这三条 `tables.*.name`
+> 本来就映射到它们自己的英文原串（它们同时也在硬冻结登记表的 `rolltable_names` 里）。
+> 表里的**结果正文**是中文的，会被修好；表名不会动。文件夹名和 4 个宏名则会全部修好。
+> 换句话说：典型症状里的 6 项修得掉，3 张表名修不掉。
+
+它做的是**原地改名 / 原地补正文**：不删文档、不重新导入、不动 `_id`、不动文件夹结构，
+所以你在世界里已经做的工作（改过的场景、加的笔记、调过的角色）都还在。
+
+### 为什么会这样 —— 上游缺陷，删了重装也可能再来一次
+
+`alienrpg` 系统会在**第一次进世界时自行导入**它的 Adventure 包
+（`systems/alienrpg/module/apps/init.mjs:48-56 → :74-82 FirstTimeSetup()`），
+而这次导入**不问 Babele 准备好了没有**。跑在 Babele 会话建成之前（或那次开世界压根没启用
+Babele）的话，落地的文档全是英文名 —— 而此后**没有任何东西会再去改它们的名字**：
+
+- `Adventure#import` 只在**再次导入**时才覆盖已存在的文档
+  （`client/documents/adventure.mjs:130-157` + `:188-197`）；
+- Babele 的补名钩子只有 `createFolder` 一条（`babele/script/babele.js:72-74`），
+  而它要求文档带 `Compendium.` 开头的 `_stats.compendiumSource`，本包的文件夹带的却是
+  世界式 `Folder.<id>`，那条路径直接 early-return；**宏和随机表连这样的钩子都没有**。
+
+日志正文之所以偏偏是中文，是系统自己的 `showReleaseNotes()`
+（`systems/alienrpg/module/alienrpg.mjs:567-621`）在版本变更时**只**强刷了那一篇 JournalEntry，
+而且 `:596` 明确排除了 `folders`，也从不碰 macros / tables。
+
+⚠ **这是上游的数据/时序缺陷，不是本模块能一次性根治的。** 新建的世界仍有可能出现同样的状态
+（例如首次进世界时 Babele 还没启用、或先开了世界再装汉化）。出现了就再跑一次这个工具，
+它是**幂等**的 —— 第二次跑是空操作。
+
+### 它改什么
+
+| 覆盖 | 说明 |
+|---|---|
+| 七类文档的**名字** | Folder / Macro / RollTable / Item / Actor / JournalEntry / Scene |
+| **随机表结果** | `TableResult.description`；`TableResult.name` 仅限**不带 `documentUuid`** 的结果 |
+| **日志页面** | 页名 + 正文 HTML（`JournalEntryPage.name` / `text.content`） |
+| **角色的表名引用** | `system.rTables` / `system.cTables`，与表名**同步移动**（见下） |
+
+匹配方式有两条，主次分明：
+
+1. **按 `_id`**（主）—— `Adventure#import` 是 `keepId: true` 建档的，世界文档的 id 就是包里的 id。
+   目标值直接取**当前这份合集包经 Babele 翻译后的样子**，也就是「一次干净的重新导入会写成什么」。
+2. **按英文名**（补）—— 只用于世界里那些被手工删掉重建、id 已经对不上的文档。
+   这一路会去读对应模块的 `compendium/cn/<包名>.json`，拿英文键换中文值。
+
+   ⚠ 这一路会碰到**不属于本项目**的文档：世界里叫 `Weapons` / `Creatures` / `Careers`
+   的文件夹，可能是你自己建的，也可能是别的模块建的。所以它带两道收窄判据，
+   任何一道成立就跳过并写进报告：
+
+   - 这个英文名**已经有一份文档按 `_id` 认到包里的正主**了；
+   - 想改成的那个中文名，**世界里已经有别的文档在用**了。
+
+   净效果：包里那份改，同名的第二份不动。真正被手工重建、世界里再没有第二份的，
+   照常修好 —— 这一路没有变成摆设。
+
+3. **译文没生效的包不参与判定。** 三个 Adventure 包**故意共用 `_id`**，而
+   `alien-evolved-corerules` 目前**还没有译文文件**。一个没有译文的包读出来的就是
+   英文原名，那是**弃权**不是反对票；早先版本把它当成「两个包给的译名不一致」，
+   于是整片正确译名被自己人挡掉（实测：三包环境下 172 条待办 / 32 条被挡 / 95 条跳过，
+   而应有的是 299 条 / 0 条 / 3 条）。现在这类包会被静音，并在报告里点名。
+
+### 它**不**改什么（明说，不含糊）
+
+- **物品 / 角色的正文**（描述、笔记、天赋说明……）。这些字段的真实路径随
+  `Item.type` 变（见 `babele-mappings.js` 的 `_variants`），在运行时重推一遍等于把 Babele 的
+  mapping 引擎抄第二份，抄错了是静默写错字段。要全量刷新请用合集里的 **Adventure 导入器**
+  （那会**整份覆盖**已存在的文档，你在这些文档上做的改动会丢）。
+- **宏的 `command`**。里面有一批必须逐字节保持英文的字面量（登记表 `macro_commands` 一节）。
+- **场景的 notes / drawings / regions**、**Playlist / Cards**。
+- **带 `documentUuid` 的随机表结果的 `name`**（引用了别的文档的那种结果）。这一格走
+  `referencedDocumentField` converter，值可能是从被引用文档现取的，原地写死会钉成快照。
+
+  > **不带 `documentUuid` 的结果名照修。** 那个 converter 的**第一优先级是本地译文**
+  > （`babele/script/converter/referenced-document-field-converter.js:15-17`
+  > `if (typeof context.translation !== "undefined" && context.translation !== null)
+  > { return context.translation; }`），只有本地没给译文时才去 UUID 那边现取。
+  > 实测两份有译文的包共 155 条结果，其中包里已是中文的结果名 43 条、
+  > **带 `documentUuid` 的 0 条**；全语料带 `documentUuid` 的一共 2 条且都没有译名。
+  > 早先的版本一刀切不修 `name`，白白漏掉这批已经译好的结果名，而它想防的情况一条都没出现。
+- **合集包本身**。工具只改世界文档，合集永远由 Babele 在读取时翻译。
+
+另外，**现值里已经有汉字的字段一律跳过**（当作「你自己改过的」），并在报告里逐条列出。
+真要强制对齐，面板上有「强制对齐已中文化的名称与正文」这个勾选框 —— 它会覆盖你的改动。
+
+### ⛔ Babele 没生效时它会拒绝运行
+
+「现值已含汉字就跳过」是唯一挡住反向破坏的东西，而上面那个 `force` 勾选框恰好绕过它。
+于是有一条真实的破坏性路径：**Babele 关着（或语言不是中文、或汉化模块没开）+ 勾了 force**
+—— 此时从合集包里读出来的**全是英文**，工具会把一个已经汉化好的世界整体刷回英文。
+实测（三份 raw dump + 已中文化的模拟世界）：**104 个名字 + 190 处正文由中文改回英文**，
+而且**没有撤销键**。
+
+所以现在：**只要一个 Adventure 包的译文都没生效，工具直接抛错拒绝运行**，
+不是「跑出 0 条待办」。报告里会点名是哪些包。光靠一条告警是挡不住的 ——
+在修掉 `isTranslated` 传参错误之前（`babele.js:552-559` 收的是合集 id 字符串，
+工具却传了 `CompendiumCollection` 对象，于是**每个包都报 false**），
+那句告警在完全健康的世界里也每次都弹，早被训练成噪音了。
+
+### ⛔ 硬冻结的名字一个都不会被改
+
+工具在运行时加载 `data/DO-NOT-TRANSLATE.json`（与 `7-其他内容/DO-NOT-TRANSLATE.json` 是同一份文件），
+把「必须逐字节保持英文」的那些名字编成判据：3 个文件夹名、11 个随机表名、6 个按
+`.toUpperCase()` 比较的天赋名、3 个 Adventure 名与 2 个开场场景名，外加
+`Critical Injuries` 前缀过滤器和武器名的 ` RPG ` 子串判据。
+任何一次会破坏这些判据的改名都会被**拦下并写进报告**（在「被硬冻结登记表挡住」一栏，
+连原因带 `file:line` 依据），不是静默跳过。
+
+⚠ **登记表读不到 = 工具拒绝运行**，不会「降级为无守卫地跑」。理由很直白：把
+`Alien Creature Tables` 文件夹改个名，生物卡的攻击表下拉框会塌成一个 `None`，
+攻击按钮随即抛 `TypeError`（`rollTableData.mjs:27` + `actor.mjs:2497` 那个无守卫的
+`table.roll()`）—— 没有守卫就跑，比不跑坏得多。
+
+同理，随机表一旦改名，指向它的生物角色的 `system.rTables` / `system.cTables`
+会**同一次一起改**（表名和引用「要么一起动，要么都不动」）；哨兵值 `None` 永远不动。
+
+### 报告与回退
+
+没有撤销按钮，所以工具把**每一条改动的原值**都留下来了：
+
+- 面板里一张表，逐条列出「类型 / 文档 / 位置 / 原 / 新」；
+- 一条只有你看得见的聊天摘要；
+- F12 控制台里的完整 `console.table`（不截断）；
+- 面板上的「复制报告」（Markdown，可直接贴 issue）与「导出 JSON」；
+- `game.modules.get("alienrpg-cn").api.lastReport` 里存着完整报告对象。
+
+**建议先在世界备份上跑一遍。**
+
+### 脚本入口
+
+```js
+// 只扫描，不写盘，返回完整报告对象
+await game.modules.get("alienrpg-cn").api.retranslateWorld();
+
+// 真正执行
+await game.modules.get("alienrpg-cn").api.retranslateWorld({ apply: true });
+
+// 打开带确认的面板（等价于设置里那个按钮）
+await game.modules.get("alienrpg-cn").api.openRetranslateDialog();
+```
+
+选项：`content`（正文，默认 `true`）、`nameFallback`（按名字兜底，默认 `true`）、
+`force`（覆盖已中文化的现值，默认 `false`）、`chat`（发聊天摘要，默认 `true`）。
+
+若某个包的译文文件不在 `<被翻译方 id>-cn` 这个命名约定里，用
+`api.registerRepairSource("<包 collection>", "modules/<模块 id>/compendium/cn/<包 collection>.json")`
+显式登记；不登记也不会出错，只是那个包用不了「按名字兜底」，报告里会明说。
+
+### 闸门
+
+```bash
+node "4-常用脚本/qa/gate_retranslate_world.mjs"
+```
+
+105 项检查，其中：用 Babele 2.9.1 的**真 converter** 把两份 raw dump 翻一遍当输入，
+跑「规划 → 应用 → 再规划」证明**幂等**（第一遍 106 处改名 + 193 处正文，第二、三遍 0 条）；
+灵敏度档故意把冻结名译成中文，验证守卫**真的会拦**（防「判据空转」）；
+还端到端验了两条硬闸：非 GM 拒绝运行、登记表读不到拒绝运行。
+
+---
+
 ## 依赖 / Requires
 
 - **Foundry VTT v13+**（`compatibility`：minimum 13 / verified 14 / maximum 14.999）
@@ -343,7 +519,15 @@ node "4-常用脚本/release/generate_runtime.mjs"
 
 # 只校验、不写盘（发版前用）
 node "4-常用脚本/release/generate_runtime.mjs" --check
+
+# 「重新汉化本世界」修复工具的闸门（守卫编译 / 判据行为 / 真 Babele 译文 /
+#  端到端幂等 / 灵敏度 / 出货，共 105 项）
+node "4-常用脚本/qa/gate_retranslate_world.mjs"
 ```
+
+改动 `7-其他内容/DO-NOT-TRANSLATE.json` 后，**必须**把它复制到 `1-系统汉化插件/data/`：
+修复工具读的是包内那一份，两处不同步 = 判据用的是旧登记表。
+`gate_retranslate_world.mjs` 的 P 档会逐字节比对，忘了复制就红。
 
 `babele-mappings.js` 是**生成文件，禁止手改** —— 抽取器按
 `4-常用脚本/extract/mappings.mjs` 决定写出哪些 key，Babele 按这个文件决定查哪些 key，
