@@ -920,11 +920,133 @@ export function applyDocRules(rules, data) {
 }
 
 /* ------------------------------------------------------------------ *
+ * 通道 F —— 世界集合 getName 的**译名回退垫片**
+ *
+ * 解冻 `"MU/TH/ER Instructions."`。
+ *
+ * 为什么它本来是 T-FROZEN：alienrpg 4.1.13 有 6 处 `game.journal.getName(...)`
+ * 拿这一串去查世界里的日志文档，其中 **4 处不做空检查**就解引用：
+ *   systems/alienrpg/module/apps/init.mjs:81   FirstTimeSetup()                     .show()
+ *   systems/alienrpg/module/apps/init.mjs:107  ModuleImport() 的 importAdventure 钩子  .show()
+ *   systems/alienrpg/module/alienrpg.mjs:592   showReleaseNotes()                   .id
+ *   systems/alienrpg/module/apps/migratefolders.js:120  allDone()                    .show()
+ *     （migratefolders.js 整份是死文件 —— init.mjs:2 的 import 被注释掉了。
+ *       但它随时可能被上游接回来，所以照样算进爆炸半径。）
+ * 另外 2 处：alienrpg.mjs:574 有显式 `!== null && !== undefined` 守卫；
+ * alienrpg.mjs:613 的结果紧接着在 :614 被 `.setFlag()`，其实也是裸解引用。
+ * 把包里的日志名译成中文 -> 这些 getName 全部返回 undefined -> 首次开世界就抛，
+ * 而且 showReleaseNotes 的 catch 是**空的**（alienrpg.mjs:618），静默到底。
+ *
+ * 为什么现在可以解冻：冻结的根因不是「名字不能变」，是「查找按英文名走」。
+ * 我们自己就拿着运行时补丁通道，把查找补上一条**译名回退**即可 ——
+ *   原查找命中  -> 原样返回，垫片**完全不介入**（英文世界、旧世界都不受影响）；
+ *   原查找落空且参数**逐字节等于**那一串 -> 用译名再查一次。
+ * 于是上游那几处裸解引用拿到的仍是一个真文档，一行上游代码都不用改。
+ *
+ * ⚠ 依赖关系是**双向**的：这个垫片一旦被删，
+ *   `1-系统汉化插件/compendium/cn/alienrpg.alien-rpg-system.json` 里的
+ *   `entries["Alien RPG System"].journals[…].name` 必须同时改回英文原串，
+ *   否则首次开世界就炸。7-其他内容/DO-NOT-TRANSLATE.json 的
+ *   `system.welcomeJournalEntry` / `system.releaseNoteName` 两条把这条依赖写死了。
+ *
+ * 装在哪：**只装在 `game.journal` 这一个实例上**，不动
+ * `foundry.utils.Collection.prototype.getName`（common/utils/collection.mjs:134）——
+ * 那是全局的，`game.actors` / `game.items` / 每一个 CompendiumCollection 都会跟着被包，
+ * 爆炸半径大到没法论证。实例上挂一个**不可枚举**的自有属性即可遮蔽原型方法。
+ *
+ * 装在什么时候：`setup`。逐行核对过 client/game.mjs：
+ *   :730  this.initializeDocuments();   <- `game.journal` 在这里才被造出来
+ *   :740  Hooks.callAll("setup");       <- 所以 setup 是最早能拿到集合的钩子
+ *   :779  Hooks.callAll("ready");       <- 系统那几处活的调用全在 ready 里
+ * `i18nInit`（:663）太早，那时 `game.journal` 还是 undefined；而 `ready` 太晚 ——
+ * esmodule 的装载顺序是 system 先于 module，系统的 `Hooks.once("ready")` 注册在
+ * 我们之前，同一轮里会**先**跑到 FirstTimeSetup()。setup 早于整个 ready 轮，稳。
+ *
+ * ⚠ 哨兵名必须**唯一**：本文件与 plugins-hardcoded-cn.mjs 曾共用 `__alienCnPatched`，
+ *   后装的那份看见图章就静默 return，一条译文都不生效。这里用专属名。
+ * ------------------------------------------------------------------ */
+
+/**
+ * 被解冻的那一串，以及它的译名。
+ *
+ * ⚑ LOCKSTEP：`cn` 必须与 compendium/cn/alienrpg.alien-rpg-system.json 里
+ *   `journals["MU/TH/ER Instructions."].name` 及其唯一一页的 `name` **逐字节相等**。
+ *   adversarial_hardcoded_patch.mjs 的 S 组机械比对这一条。
+ * ⚠ `MU/TH/ER` 这个词元保持 ASCII：它是船载电脑的名字，MU-TH-UR 插件里也这么写。
+ */
+const NAME_FALLBACKS = {
+  journal: [{ en: 'MU/TH/ER Instructions.', cn: 'MU/TH/ER 使用说明' }],
+};
+
+/** 专属哨兵，与 NOTIFY_FLAG 及 plugins-hardcoded-cn.mjs 的任何图章都不同名。 */
+const GETNAME_FLAG = '__alienrpgCnGetNamePatched';
+
+/**
+ * 给一个 DocumentCollection 装上译名回退。
+ *
+ * @param {object} collection  通常是 `game.journal`
+ * @param {Array<{en:string,cn:string}>} pairs
+ * @returns {boolean} 真的装上了才返回 true（没门 / 没集合 / 已装过都返回 false）
+ */
+export function installNameFallback(collection, pairs) {
+  if (!enabled()) return false;
+  if (!collection || typeof collection.getName !== 'function') return false;
+  if (!Array.isArray(pairs) || !pairs.length) return false;
+  if (collection.getName[GETNAME_FLAG]) return false; // 已经装过（热重载 / 双重加载）
+
+  // 原方法住在原型链上（common/utils/collection.mjs:134）。如果**别人**已经在实例上
+  // 挂了自有属性，就调他那一层；否则每次都从原型上现取 —— 这样别人之后再补原型，
+  // 我们也照样调得到他的新实现，不会把他挤掉。
+  const ownGetName = Object.getOwnPropertyDescriptor(collection, 'getName')?.value ?? null;
+  const proto = Object.getPrototypeOf(collection);
+  const callOriginal = (self, name, options) =>
+    (ownGetName ?? proto.getName).call(self, name, options);
+
+  const wrapped = function alienrpgCnGetName(name, options) {
+    // `strict: true` 会让原方法在查不到时**抛异常**（collection.mjs:135-138）。
+    // 先按 strict:false 查一遍，回退也失败了再把原 options 交回去，让上游抛它自己的错。
+    const strict = options?.strict === true;
+    const soft = strict ? { ...options, strict: false } : options;
+
+    const found = callOriginal(this, name, soft);
+    if (found !== undefined && found !== null) return found; // 原查找命中 -> 绝不介入
+
+    if (typeof name === 'string') {
+      for (const { en, cn } of pairs) {
+        if (name !== en) continue; // 逐字节相等才动，别的名字一律透传
+        const alt = callOriginal(this, cn, soft);
+        if (alt !== undefined && alt !== null) return alt;
+        break;
+      }
+    }
+
+    if (strict) return callOriginal(this, name, options); // 让上游抛它自己那条错
+    return found;
+  };
+  wrapped[GETNAME_FLAG] = true;
+
+  Object.defineProperty(collection, 'getName', {
+    value: wrapped,
+    writable: true,
+    configurable: true,
+    enumerable: false, // 集合会被遍历/序列化，别在自有可枚举键里多出一个方法
+  });
+  console.log(`${MODULE_ID} | 已装载 getName 译名回退（${pairs.length} 条）`);
+  return true;
+}
+
+HOOKS.once('setup', () => {
+  installNameFallback(globalThis.game?.journal, NAME_FALLBACKS.journal);
+});
+
+/* ------------------------------------------------------------------ *
  * QA 导出面
  * ------------------------------------------------------------------ */
 
 export const __TEST__ = {
   NOTIFY_FLAG,
+  GETNAME_FLAG,
+  NAME_FALLBACKS,
   LITERAL_LABELS,
   SETTINGS_MENU_RETARGET,
   TEMPLATE_OVERRIDES,
@@ -937,4 +1059,5 @@ export const __TEST__ = {
   rewriteCritGlue,
   translateNotification,
   applyDocRules,
+  installNameFallback,
 };

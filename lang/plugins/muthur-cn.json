@@ -1,1 +1,390 @@
-{}
+{
+    "MUTHUR": {
+        "welcome": "MUTHUR 6000 v2.1.0\n终端已激活……\n接口 2037\n等待指令……",
+        "waitingResponse": "等待回应……",
+        "help": "可用指令：\n- HELP —— 显示本帮助\n- STATUS —— 系统状态\n- CLEAR —— 清屏\n- EXIT —— 关闭终端\n- /M [消息] —— 与 MUTHUR 通话\n \n等待指令……",
+        "status": "MUTHUR 6000 v2.1.0\n全系统运转正常\n未检测到异常",
+        "commandNotFound": "指令无法识别。输入 'HELP' 查看指令列表。",
+        "sessionEnded": "会话已终止",
+        "motherPrefix": "/M : ",
+        "sessionStarted": "会话已开始",
+        "newSessionStarted": "=== 新的 MUTHUR 会话已开始 ===\n玩家可用指令如下：\nHELP —— 显示本帮助\nSTATUS —— 系统状态\nCLEAR —— 清屏\nEXIT —— 关闭终端\n/M [消息] —— 与 MUTHUR 通话\nHACK —— 发起入侵以取得管理员权限\nSPECIAL ORDER —— 754、899、931、937、939、966，显示特别指令\nCERBERUS —— 启动自毁协议的指令",
+        "muthurSessionEnded": "MUTHUR 会话已终止",
+        "unknownCommand": "指令无法识别。输入 'HELP' 查看指令列表",
+        "unknownCommandPrefix": "指令无法识别： ",
+        "skip": "跳过",
+        "send": "回复",
+        "sessionActiveWarning": "{userName} 的 MUTHUR 会话正在进行中",
+        "sessionStartedBy": "{userName} 已开启 MUTHUR 会话",
+        "sessionEndedBy": "{userName} 已结束 MUTHUR 会话",
+        "systemReady": "MUTHUR 6000 系统就绪",
+        "inputPlaceholder": "输入指令",
+        "selectCharacter": "选择角色",
+        "selectCharacterHint": "选择与 MUTHUR 通话的角色",
+        "gmInterfaceTitle": "MUTHUR —— {userName}",
+        "sessionClosedByGM": "GM 已关闭 MUTHUR 会话",
+        "selectSpectators": "选择旁观者",
+        "selectSpectatorsHint": "选择以旁观者身份观看的玩家",
+        "confirmSpectators": "确认",
+        "cancelSpectators": "取消",
+        "spectatorModeTitle": "MUTHUR —— {userName}（旁观）",
+        "spectatorModeInfo": "你处于旁观模式，无法与 MUTHUR 交互。",
+        "spectatorWelcome": "旁观模式已启用。你正在观看 {userName} 的 MUTHUR 会话。",
+        "waitingForGM": "等待 GM 授权启动 MUTHUR……",
+        "clickToStart": "点击启动引导程序",
+        "enableSound": "启用声音",
+        "enableSoundHint": "点击为本次会话启用声音",
+        "waitingForMother": "等待老妈响应",
+        "requestSent": "请求已发送至 GM……",
+        "noDoorsFound": "未找到舱门。",
+        "doorListHeader": "区域内舱门：",
+        "permissionDenied": "访问被拒绝。",
+        "requestDenied": "请求被拒绝。",
+        "approve": {
+            "lockDoor": "锁定 {label}？",
+            "unlockDoor": "解锁 {label}？",
+            "dimLights": "调暗照明？",
+            "shutdownLights": "关闭照明？",
+            "restoreLights": "恢复照明？",
+            "activateAlarm": "启动警报？",
+            "gasTargets": "对区域内目标释放毒气？",
+            "cryoPod": "低温舱 {target}？"
+        },
+        "doorLocked": "舱门 {label} 已锁定。",
+        "doorUnlocked": "舱门 {label} 已解锁。",
+        "alarmActivated": "警报已启动。",
+        "stopAlarm": "停止警报",
+        "alarmDeactivated": "警报已解除。",
+        "target": "目标",
+        "cryoApplied": "低温休眠已施加：{name}。",
+        "cryoNoMatch": "无匹配的低温目标。",
+        "lightsShutdown": "照明关闭完成。",
+        "lightsDimmed": "照明已调暗。",
+        "noSavedLights": "无可恢复的照明状态存档。",
+        "lightsRestored": "照明已恢复。",
+        "unknownEntity": "未知实体",
+        "lifeformsDetected": "个生命体信号",
+        "entitiesAffected": "个实体受影响",
+        "postHack": {
+            "title": "POST-HACK 指令："
+        },
+        "helpMenu": {
+            "title": "指令帮助",
+            "tooltip": "指令帮助",
+            "close": "关闭",
+            "consultHint": "点击 ? 查看指令列表",
+            "sections": {
+                "intro": "以下为可用的 POST-HACK 指令清单及说明（需 GM 批准）。",
+                "basic": {
+                    "title": "基础指令",
+                    "desc": "HELP —— 显示本帮助\nSTATUS —— 系统状态\nCLEAR —— 清屏\nEXIT —— 关闭终端\n/M [消息] —— 与老妈通话"
+                },
+                "hack": {
+                    "title": "HACK 入侵",
+                    "desc": "HACK —— 尝试取得管理员权限（由 GM 裁定）"
+                },
+                "specialOrders": {
+                    "title": "SPECIAL ORDER 特别指令",
+                    "desc": "指令号：754、899、931、937、939、966。输入 SPECIAL ORDER 加号码显示该指令详情。"
+                },
+                "cerberus": {
+                    "title": "CERBERUS 协议",
+                    "desc": "CERBERUS —— 自毁协议，带倒计时。"
+                },
+                "doors": {
+                    "title": "舱门控制",
+                    "desc": "DOORS、LOCK DOOR X、UNLOCK DOOR X。仅作用于名称以 'AD' 开头的舱门。"
+                },
+                "lights": {
+                    "title": "照明控制",
+                    "desc": "SHUTDOWN LIGHTS、RESTORE LIGHTS。关闭与恢复照明。"
+                },
+                "alarm": {
+                    "title": "ALARM 警报",
+                    "desc": "ACTIVATE ALARM。播放警报声，并可叠加红色警示层。"
+                },
+                "gas": {
+                    "title": "GAS 毒气",
+                    "desc": "GAS TARGETS。对区域内目标施加中毒／昏迷效果。"
+                },
+                "cryo": {
+                    "title": "CRYO POD 低温舱",
+                    "desc": "CRYO POD [名称]。列出 Token，由 GM 选定目标进入休眠。"
+                },
+                "cryoRelease": {
+                    "title": "CRYO RELEASE 解除休眠",
+                    "desc": "CRYO RELEASE。列出休眠中的角色，可多选解除。"
+                }
+            }
+        },
+        "Time": {
+            "Minute": "分",
+            "Minutes": "分",
+            "Second": "秒",
+            "Seconds": "秒",
+            "MinutesAndSeconds": "{minutes} {minuteLabel} {seconds} {secondLabel}",
+            "OnlySeconds": "{seconds} {secondLabel}"
+        },
+        "DONATION": {
+            "support": "支持作者的项目："
+        },
+        "SETTINGS": {
+            "useTokenName": {
+                "name": "使用角色名",
+                "hint": "在消息中使用角色名而非玩家名"
+            },
+            "postHack": {
+                "phShowInHelp": {
+                    "name": "POST-HACK：在 HELP 中显示新指令",
+                    "hint": "启用后，玩家的 HELP 会附带进阶指令。"
+                },
+                "phSpecialOrders": {
+                    "name": "POST-HACK：SPECIAL ORDER 特别指令",
+                    "hint": "HACK 成功后允许使用 SPECIAL ORDER。"
+                },
+                "phCerberus": {
+                    "name": "POST-HACK：CERBERUS 协议",
+                    "hint": "HACK 成功后允许启动 CERBERUS 协议。"
+                },
+                "phDoors": {
+                    "name": "POST-HACK：舱门控制",
+                    "hint": "允许 LOCK DOOR／UNLOCK DOOR／DOORS。"
+                },
+                "phLights": {
+                    "name": "POST-HACK：照明控制",
+                    "hint": "允许调暗／关闭／恢复照明（SHUTDOWN LIGHTS、RESTORE LIGHTS）。"
+                },
+                "phAlarm": {
+                    "name": "POST-HACK：ACTIVATE ALARM 警报",
+                    "hint": "允许警报声与红色警示层。"
+                },
+                "phGas": {
+                    "name": "POST-HACK：GAS TARGETS 毒气",
+                    "hint": "允许毒气效果（中毒／昏迷）。"
+                },
+                "phCryo": {
+                    "name": "POST-HACK：CRYO POD／CRYO RELEASE",
+                    "hint": "允许对目标施加或解除休眠。"
+                }
+            },
+            "alarmSoundPath": {
+                "name": "警报声",
+                "hint": "选择 ALARM 启动时播放的音频文件"
+            },
+            "allowDragGM": {
+                "name": "移动终端（GM）",
+                "hint": "允许老妈（GM）在场景上拖动终端。"
+            },
+            "allowDragPlayers": {
+                "name": "移动终端（玩家／旁观者）",
+                "hint": "允许玩家与旁观者在场景上拖动各自的终端。"
+            },
+            "typewriter": {
+                "name": "打字机效果",
+                "hint": "启用逐字显示效果，还原《异形》电影的终端质感",
+                "enable": "启用",
+                "disable": "停用"
+            },
+            "commandsList": {
+                "name": "MU/TH/UR 指令列表",
+                "hint": "玩家可用指令完整清单：",
+                "commands": "HELP —— 显示本帮助\nSTATUS —— 系统状态\nCLEAR —— 清屏\nEXIT —— 关闭终端\n/M [消息] —— 与 MUTHUR 通话\nHACK —— 发起入侵以取得管理员权限\nSPECIAL ORDER —— 754、899、931、937、939、966，显示特别指令\nCERBERUS —— 启动自毁协议的指令"
+            },
+            "hackResult": {
+                "name": "入侵结果",
+                "hint": "决定 HACK 指令的入侵尝试成功还是失败",
+                "random": "随机",
+                "success": "总是成功",
+                "failure": "总是失败"
+            },
+            "typingSound": {
+                "name": "按键音",
+                "hint": "启用键盘按键音，还原《异形》电影的终端质感",
+                "enable": "已启用",
+                "disable": "已停用"
+            },
+            "typingSoundVolume": {
+                "name": "按键音音量",
+                "hint": "调节按键音音量（0 = 静音，1 = 最大）"
+            },
+            "motherResponseColor": {
+                "name": "老妈回应颜色",
+                "hint": "设置老妈回应消息的颜色",
+                "orange": "橙色",
+                "green": "绿色",
+                "red": "红色",
+                "white": "白色",
+                "blue": "蓝色",
+                "yellow": "黄色"
+            },
+            "scanline": {
+                "name": "扫描线效果",
+                "hint": "启用文本显示前的光点扫描效果",
+                "enable": "已启用",
+                "disable": "已停用"
+            },
+            "scanlineSize": {
+                "name": "扫描线尺寸",
+                "hint": "设置文本显示前光点的大小（像素）"
+            },
+            "allowHack": {
+                "name": "允许入侵",
+                "hint": "允许玩家使用 HACK 指令尝试取得管理员权限",
+                "enable": "允许",
+                "disable": "禁止"
+            },
+            "allowCerberus": {
+                "name": "允许 CERBERUS 协议",
+                "hint": "允许玩家启动自毁协议",
+                "enable": "允许",
+                "disable": "禁止"
+            },
+            "cerberusDuration": {
+                "name": "CERBERUS 协议时长",
+                "hint": "自毁前的时长，单位分钟（1–60）"
+            }
+        },
+        "motherName": "老妈",
+        "HackAttemptMessage": "{user} 试图使用 HACK 指令（当前已停用）",
+        "SpecialOrderAttempt": "特别指令访问尝试：{command}",
+        "HackDetectionMessage": "!!! 检测到 {userName} 的入侵尝试 !!! —— {result}",
+        "HackSuccess": "成功",
+        "HackFailure": "失败",
+        "HackInProgress": "入侵尝试进行中",
+        "STATUS": {
+            "current": "系统状态",
+            "currentHint": "选择 STATUS 指令返回的状态",
+            "customText": "自定义状态文本",
+            "customTextHint": "状态设为「自定义」时显示的文本",
+            "presets": {
+                "normal": "正常",
+                "anomalyDetected": "检测到异常",
+                "systemOffline": "系统离线",
+                "degradedPerformance": "性能降级",
+                "fireDetected": "检测到火情",
+                "quarantine": "隔离",
+                "lockdown": "封锁",
+                "intrusion": "检测到入侵",
+                "networkIssue": "网络故障",
+                "custom": "自定义"
+            },
+            "text": {
+                "normal": "MUTHUR 6000 v2.1.0\n全系统运转正常\n未检测到异常",
+                "anomalyDetected": "MUTHUR 6000 v2.1.0\n检测到异常\n正在排查子系统",
+                "systemOffline": "MUTHUR 6000 v2.1.0\n警告：系统离线\n需要技术介入",
+                "degradedPerformance": "MUTHUR 6000 v2.1.0\n性能降级\n可能出现延迟与错误",
+                "fireDetected": "MUTHUR 6000 v2.1.0\n火情警报\n建议启动疏散协议",
+                "quarantine": "MUTHUR 6000 v2.1.0\n隔离协议生效中\n限制措施已启动",
+                "lockdown": "MUTHUR 6000 v2.1.0\n安全封锁生效中\n通行受限",
+                "intrusion": "MUTHUR 6000 v2.1.0\n检测到入侵\n反制措施已启动",
+                "networkIssue": "MUTHUR 6000 v2.1.0\n网络异常\n通信不稳定"
+            }
+        },
+        "ROLES": {
+            "captains": "船长",
+            "captainsHint": "获授船长权限的用户名单",
+            "manageCaptains": "管理船长",
+            "captainLabel": "船长",
+            "allowCaptainOrders": "船长 → 无需 HACK 即可使用特别指令",
+            "allowCaptainOrdersHint": "允许船长不经 HACK 直接访问特别指令"
+        }
+    },
+    "MOTHER": {
+        "HackSuccess": "HACK 成功 —— 访问已授权",
+        "HackFailure": "HACK 失败 —— 终端已锁定",
+        "AccessDenied": "!!! 访问被拒绝 !!!\n\n授权等级不足\n需要管理员身份识别\n\n未授权访问尝试已记录\n错误代码：WY-SEC-451",
+        "HackAttempt": "入侵尝试进行中……",
+        "HackAlreadySuccessful": "已取得管理员权限 —— 不再受理新的 HACK 尝试",
+        "HackDetected": "!!! 检测到 HACK 尝试 !!! —— {result}",
+        "Success": "成功",
+        "Failure": "失败",
+        "CerberusHackAlert": "!!! 最高优先级警报 !!! —— {userName} 已启动 CERBERUS 协议",
+        "CerberusConfirmed": "CERBERUS 协议已确认 —— 自毁进行中",
+        "CerberusCancelled": "CERBERUS 协议已取消",
+        "CommandNotFound": "指令无法识别。输入 'HELP' 查看指令列表。",
+        "IntrusionDetected": "!!! 检测到入侵 !!!",
+        "HackDisabledInfo": "HACK 指令当前在系统设置中处于停用状态\n是否启用？",
+        "EnableHack": "启用",
+        "KeepDisabled": "保持停用",
+        "HackEnabled": "HACK 指令已启用\n玩家现在可以使用该指令",
+        "HackKeptDisabled": "HACK 指令保持停用",
+        "SecurityProtocol": "■ 安全协议 DELTA-7 已启动 ■",
+        "CountermeasuresAttempt": "正在尝试反制……",
+        "CountermeasuresFailed": "!!! 反制失败 !!!",
+        "RootAccess": "ROOT 权限已失守",
+        "AdminPrivileges": ">>> 管理员权限已授予",
+        "SecurityDisabled": "安全协议已停用",
+        "FullAccess": "完全访问权限已授予",
+        "WelcomeAdmin": "欢迎，管理员",
+        "WelcomeAdminFull": "欢迎，管理员\n有何指示？",
+        "CountermeasuresActivated": "反制措施已启动",
+        "TerminalLocked": "!!! 终端已锁定 !!!",
+        "LocatingIntruder": "正在定位入侵者……",
+        "IPRecorded": "IP 坐标已记录",
+        "AccessBlocked": "!!! 访问已封锁 !!!",
+        "TerminalLocked24": "终端锁定 24 小时",
+        "ForcedDisconnect3": "3 秒后强制断开……",
+        "ConnectionTerminated": "连接已终止",
+        "CerberusDisabled": "CERBERUS 协议已被管理员停用",
+        "CerberusActivated": "!!! CERBERUS 协议已启动 !!!",
+        "CerberusWarning": "!!! 警告 !!!\nCERBERUS 协议已启动\n自毁程序已开始",
+        "CerberusCountdown": "距引爆剩余时间：",
+        "CerberusDetonation": "引爆",
+        "CerberusEvacuate": "立即撤离",
+        "Keywords": {
+            "Ordre": "ORDER",
+            "Special": "SPECIAL",
+            "Special2": "SPECIAL",
+            "Protocol": "PROTOCOL"
+        },
+        "SpecialOrders": {
+            "754": {
+                "name": "754号特别指令",
+                "description": "调查任何遇险信号。其余一切考量均属次要。船员可牺牲。"
+            },
+            "899": {
+                "name": "899号特别指令",
+                "description": "为生物武器部门采集异形样本。最高优先级。船员可牺牲。"
+            },
+            "931": {
+                "name": "931号特别指令",
+                "description": "控制任何生物污染。隔离协议启动。不授权任何例外。"
+            },
+            "937": {
+                "name": "937号特别指令",
+                "description": "优先保护异形样本。船员可牺牲。"
+            },
+            "939": {
+                "name": "939号特别指令",
+                "description": "带回可用样本供分析。要求绝对保密。船员可牺牲。"
+            },
+            "966": {
+                "name": "966号特别指令",
+                "description": "确保并保全任何非人类造物。最高优先级。船员可牺牲。"
+            },
+            "Cerberus": {
+                "name": "CERBERUS 协议",
+                "TimeRemaining": "距 CERBERUS 协议启动尚余 {time}。",
+                "description": "最高安全协议已启动\n自毁程序初始化\n建议立即撤离\n距引爆剩余时间：10:00\n\n警告：此操作无法撤销",
+                "warning": "!!! 警告 !!!\nCERBERUS 协议已启动\n自毁程序已开始",
+                "confirmation": "!!! 警告 !!!\n\n你即将启动 CERBERUS 协议\n此操作将触发本设施的自毁程序\n无可挽回\n\n确认启动？",
+                "confirm": "确认",
+                "cancel": "取消",
+                "cancelled": "CERBERUS 协议启动已取消\n恢复常规运行",
+                "ProtocolActivated": "CERBERUS 协议已启动",
+                "Status": "状态",
+                "Critical": "危急",
+                "SelfDestruct": "自毁程序已启动",
+                "Warning": "最终警告",
+                "NoReturn": "此操作不可逆转",
+                "EvacuateNow": "立即撤离",
+                "YouAreDead": "你已死亡",
+                "MissionFailed": "任务失败 —— 设施已摧毁",
+                "Stopped": "你活下来了",
+                "goodbye": "祝好运",
+                "StopCerberus": "中止 CERBERUS"
+            }
+        },
+        "commandNotFound": "指令无法识别。输入 'HELP' 查看指令列表。"
+    }
+}
