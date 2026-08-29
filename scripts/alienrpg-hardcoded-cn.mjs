@@ -1071,3 +1071,45 @@ export const __TEST__ = {
   applyDocRules,
   installNameFallback,
 };
+
+/* ------------------------------------------------------------------ *
+ * 负面决议：这里**没有**、也不要加「来源规范化垫片」
+ * ------------------------------------------------------------------ *
+ * 2026-08-29 有过一版提案，要在这个文件里把 Adventure 内嵌文档的
+ * `_stats.compendiumSource` 从世界式 UUID（`RollTable.<id>`）改写成合集式
+ * UUID（`Compendium.alienrpg.alien-rpg-system.RollTable.<id>`），理由是
+ * 「导入后文件夹名 / 宏名 / 随机表名还是英文，是 Babele 认不出源包」。
+ *
+ * 症状是真的，成因不是。实测（判据全部固化在
+ * 4-常用脚本/qa/adversarial_hardcoded_patch.mjs 的 **A 组**，28 条）：
+ *   · 文件夹名走 nameCollection（converters.js:99-127, :176），那个转换器
+ *     **通篇不读** source 字段 —— 与 UUID 形状无关。
+ *   · 宏 / 表 / 日志走 document 转换器，source 只喂
+ *     `_exactSourceTranslationSource` 这一层 **fallback**；本地 name 键层
+ *     `currentPayload` 是后合并的一方（document-converter.js:300），永远赢。
+ *     实测：规范化前后译文输出的叶子差异 = 9 条，**全部落在被改写的
+ *     compendiumSource 字段自身**，name 一个字符都没变。
+ *   · 就算把 source 修好，导入后补写（folder-translations.js:44-62）查的是
+ *     翻译文件的**顶层** `folders` 图（mapped-compendium.js:57, :138），
+ *     而我们的译名全在 `entries[…].folders` 里，顶层那张是 `{}`。
+ *     实测：规范化之后跑真的 translateImportedCompendiumFolder()，
+ *     7 个文件夹 7/7 仍返回英文。
+ *   · 宏和随机表**根本没有**导入后补写钩子 —— babele.js 只注册了
+ *     `createFolder`（:72-74），没有 createMacro / createRollTable。
+ *     三类症状里有两类无论如何都走不到这条路上。
+ *
+ * ⇒ 垫片装上去一条译文都不会多，却会往世界文档的溯源字段里写进**伪造且
+ *   悬空**的 UUID（那个包的类型是 Adventure，装不下 Folder / RollTable
+ *   文档），而后人看见这段代码只会以为问题已经解决了。空补丁比没有补丁更坏。
+ *
+ * 真正的成因是世界处于**混合状态**：那些 Folder / Macro / RollTable 是在一次
+ * 没有 Babele 参与的导入里建出来的（alienrpg 的 init.mjs:48-56 会在首个 ready
+ * 自动导入），此后没有任何东西会去重命名世界文档；日志之所以是中文，是
+ * alienrpg.mjs 的 showReleaseNotes()（:567-621）另外单独强写了**恰好一个**
+ * 世界文档（就是那本日志），且显式跳过 folders、完全不碰宏与表。
+ * ⇒ 修法是**重新导入**：Adventure#import 对已存在的 _id 走
+ *   `{diff:false, recursive:false}` 的整份替换（adventure.mjs:188-197），
+ *   会把英文名连同 name 一起覆盖掉。不是改 source 形状，也不在这个文件里。
+ *
+ * A 组的 A7a 会盯着这件事：本文件出现任何一处给 compendiumSource 赋值就红。
+ * ------------------------------------------------------------------ */

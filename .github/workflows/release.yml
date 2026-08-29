@@ -185,6 +185,37 @@ jobs:
           fi
           echo "compendium/cn 无 mapping 保留文件名"
 
+      - name: Assert the shipped DO-NOT-TRANSLATE register is intact
+        run: |
+          # scripts/retranslate-world.mjs（「重新汉化本世界」修复工具）在运行时 fetch
+          # data/DO-NOT-TRANSLATE.json，**读不到就拒绝运行**。这条设计是对的（无守卫地
+          # 批量改世界文档比不改坏得多），但它的失效形态是**工具静默变废**：用户点开
+          # 面板只看到一句「扫描失败」，而汉化本身照常工作，所以没人会去查。
+          #
+          # 判据挑「五个必备小节都有非空 entries」而不是「文件存在」：0 字节 / `{}` /
+          # 只剩壳子的登记表都能通过「存在」，却会让 buildGuard() 抛「判据空转」。
+          set -eo pipefail
+          REG=data/DO-NOT-TRANSLATE.json
+          if [ ! -s "$REG" ]; then echo "::error::$REG 不存在或是 0 字节"; exit 1; fi
+          if ! jq -e 'type == "object"' "$REG" > /dev/null 2>&1; then
+            echo "::error::$REG 不是 JSON 对象"; exit 1
+          fi
+          SV=$(jq -r '.schema_version // "null"' "$REG")
+          if [ "$SV" != "1" ]; then
+            echo "::error::$REG 的 schema_version 是 $SV，retranslate-world.mjs 是照 v1 写的"; exit 1
+          fi
+          for s in name_lookups rolltable_names folder_names item_names name_substring_tests; do
+            N=$(jq --arg s "$s" '(.sections[$s].entries // []) | length' "$REG")
+            if [ "${N:-0}" -lt 1 ]; then
+              echo "::error::$REG 的 sections.$s.entries 是空的 —— 守卫会判定「判据空转」并拒绝运行，修复工具等于没发"; exit 1
+            fi
+            echo "  sections.$s.entries: $N"
+          done
+          # 与项目里那份必须逐字节相同 —— 两处讲同一件事、改了一边忘了另一边，
+          # 是本项目吃过最多次的亏。CI 里只有仓库这一份，所以这里只能校验形状；
+          # 逐字节比对由 4-常用脚本/qa/gate_retranslate_world.mjs 的 P 档在本地看住。
+          echo "DO-NOT-TRANSLATE 登记表形状核对通过"
+
       - name: Build module.zip
         run: |
           # ── rm -f 必须在 zip -r **之前** ──
@@ -246,6 +277,7 @@ jobs:
           # 运行时是完全静默的。只能在打包这一步挡。
           for f in module.json register.js babele-mappings.js lang/cn.json \
                    scripts/alienrpg-hardcoded-cn.mjs scripts/plugins-hardcoded-cn.mjs \
+                   scripts/retranslate-world.mjs data/DO-NOT-TRANSLATE.json \
                    styles/alienrpg-cn.css; do
             unzip -Z1 module.zip | grep -qx "$f" || { echo "::error::发布包缺少 $f"; exit 1; }
           done
