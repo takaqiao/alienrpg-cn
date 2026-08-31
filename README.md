@@ -11,11 +11,20 @@
 Foundry VTT 的 **Alien Evolved**（`alienrpg`）系统简体中文汉化的**中枢模块**。
 界面字符串走 Foundry 原生 i18n，合集正文经 Babele 加载。
 
-> **当前状态：0.2.3 —— 系统层完整，插件已补齐，内容包只差核心书。**
+> **当前状态：0.2.4 —— 系统层完整，插件已补齐，内容包只差核心书。**
 >
 > ✅ **已完成**：系统界面 **600 个键**（`en.json` 的 590 个键覆盖 584 个，6 个有意保持英文）·
 > 系统自带合集 `alienrpg.alien-rpg-system` **全译**（81.8 KB：MU/TH/ER 使用说明 66K 字、
 > 三张恐慌/压力表、26 个物品、文件夹与宏名）· CJK 字体回退 · 运行时补丁。
+>
+> 🆕 **0.2.4：`yze-combat`（Year Zero Engine: Combat）界面全译**（80 键）。
+> 该模块是 alienrpg 系统**官方支持**的先攻方案 —— 系统自带
+> `Hooks.once("yzeCombatReady", …)`（`alienrpg.mjs:500`），装上即自动写入
+> `actorSpeedAttribute` 与 `duplicateCombatantOnCombatStart`。
+>
+> ⚠ 追踪器上那对动作按钮译作**「完整动作／快速动作」**（跟《异形》进化版的说法）。
+> YZE 通称是「慢速／快速动作」，经典版《异形》也用后者 —— 若你跑的是经典版，
+> 把 `YZEC.CombatTracker.SlowAction` 改回「慢速动作」即可。
 >
 > 🆕 **0.2.3：补上技能炫技与天赋正文。** `alien-evolved-starterset` 与
 > `alien-evolved-corerules` 各自带了 19 个 `ALIENRPG.*` 键（技能炫技清单 + 天赋描述），
