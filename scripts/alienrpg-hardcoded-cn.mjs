@@ -257,7 +257,7 @@ const DOM_TEXT_REPLACEMENTS = [
     to: 'CRT 风格角色卡',
     sites: ['module/helpers/alienprgSettings.hbs:43'],
   },
-  // 技能炫技面板在**找不到对应 skill-stunts 物品**时写回的兜底文案：
+  // 技能特技面板在**找不到对应 skill-stunts 物品**时写回的兜底文案：
   //   character-sheet.mjs:1132 / synthetic-sheet.mjs:1119 /
   //   spacecraft-sheet.mjs:1097 / vehicle-sheet.mjs:1020
   //   `chatData = "<h2>No Stunts Entered</h2>"`，随后 `li2.innerHTML = chatData`。
@@ -295,7 +295,7 @@ const DOM_TEXT_REPLACEMENTS = [
     scope: null, // 由 #panel 观察器调用，不参与 render 时的整表扫描
     selector: 'h2',
     from: 'No Stunts Entered',
-    to: '未录入炫技',
+    to: '未录入特技',
     panelOnly: true,
     sites: ['character-sheet.mjs:1132', 'synthetic-sheet.mjs:1119', 'spacecraft-sheet.mjs:1097', 'vehicle-sheet.mjs:1020'],
   },
@@ -318,9 +318,9 @@ const DOM_ATTR_REPLACEMENTS = [
   // 所以只能写死中文；见报告里的 glossary_gaps。
   { selector: 'button.minus-btn i[title]', attr: 'title', from: 'Minus', to: '减少' },
   { selector: 'button.plus-btn i[title]', attr: 'title', from: 'Plus', to: '增加' },
-  // 炫技按钮 title：character-skills.hbs:15 / crt/crtui-character-skills.hbs:13
-  // ALIENRPG.Stunts 已存在（en='Stunts'，cn='炫技'，与 glossary_alien.json 的
-  // "Stunts = 炫技" 一致），走 key。
+  // 特技按钮 title：character-skills.hbs:15 / crt/crtui-character-skills.hbs:13
+  // ALIENRPG.Stunts 已存在（en='Stunts'，cn='特技'，与 glossary_alien.json 的
+  // "Stunts = 特技" 一致），走 key。
   { selector: 'button.stunt-btn i[title]', attr: 'title', from: 'Stunts', to: { key: 'ALIENRPG.Stunts' } },
   // 领地系统页的新建按钮：territory-systems.hbs:9  title="Create item"（小写 i）
   // ALIENRPG.CreateItemTitle 已存在（en='Create Item'，cn='新建物品'）却没被引用。
@@ -783,7 +783,7 @@ function applyAttrRule(root, rule) {
 }
 
 /**
- * 炫技面板（#panel）的内容是**点击之后**才写进去的，render 钩子抓不到。
+ * 特技面板（#panel）的内容是**点击之后**才写进去的，render 钩子抓不到。
  * 给每个 #panel 挂一个只看 childList 的 MutationObserver，元素被换掉时
  * observer 随元素一起被回收（WeakSet 只做防重复挂载）。
  * 观察面 = 单个 #panel 的直接子节点，这已经是能做到的最小面。

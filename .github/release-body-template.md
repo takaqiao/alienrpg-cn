@@ -13,7 +13,8 @@ https://github.com/takaqiao/alienrpg-cn/releases/latest/download/module.json
 - [Babele](https://foundryvtt.com/packages/babele) **2.9.1+**
 
 可选（装了才生效，没装零成本）：`alien-mu-th-ur` · `motion_tracker` ·
-`token-action-hud-alien` · `terminal` · `motion-tracker-multideck`。
+`token-action-hud-alien` · `terminal` · `motion-tracker-multideck` · `yze-combat` ·
+`alien-evolved-starterset` · `alien-evolved-corerules`。
 
 新手包与核心书的正文另有两个模块：
 [`alien-evolved-starterset-cn`](https://github.com/takaqiao/alien-evolved-starterset-cn) ·
@@ -21,14 +22,16 @@ https://github.com/takaqiao/alienrpg-cn/releases/latest/download/module.json
 
 ## 变更 / Changes
 
-### v0.1.0 —— 建仓
+### v0.2.5 —— 状态与特技术语修订
 
-模块骨架与发版流水线就位：Babele 注册入口、生成式 `babele-mappings.js`、
-两份运行时补丁的装配、CJK 字体回退、四个插件的语言文件槽位、以及带
-**版本号 / 下载 URL / changelog URL 三处与 tag 一致性核对**和
-**声明文件存在性核对**的发布工作流。
+- `Freezing`：冷冻 → **受冻**
+- `Encumbered`：受阻 → **超重**
+- `Gravity Dyspraxia`：重力运动障碍 → **重力失调**
+- `Critical Injuries` 的状态栏标签：英文 → **重伤**（RollTable 文档名仍冻结英文）
+- `Stunts`：炫技 → **特技**；`Skill-Stunts`：技能炫技 → **技能特技**
 
-译文尚未开始，本版**不含任何中文内容**。
+改动已同步到系统界面、系统合集、Evolved 技能特技正文、12 个中文动态键别名与
+Starter Set 对应文本。插件语言发布闸也已扩到当前七个条件式入口，含 YZE Combat 80 键。
 
 完整改动请见本次发布对应的提交记录。
 See the commits associated with this tag for the full change list.

@@ -64,9 +64,9 @@
     "       \"EV - Critical Injuries\"  与  \"Critical injuries\"（小写 i）。",
     "   这两个字符串与系统 en.json 的对应值**逐字节相同**，所以：",
     "     · EVCriticalInjuries 什么都不写 → 回落英文 → 第一次查表就命中；",
-    "     · CriticalInjuries 写上 \"Critical injuries\" → 第一次查表就命中",
-    "       （上游 cn.json 的 \"重伤\" 会让第一次落空，靠 || 兜到第三个才中）。",
-    "   ⇒ 改这两张表的中文名之前，先回来改这里。跨仓 lockstep。",
+    "     · CriticalInjuries 采用中文 \"重伤\" → 第一次查表落空，但随后两个",
+    "       冻结英文候选仍会命中；这只多两次 Map 查询，不影响功能。",
+    "   ⇒ 必须保持英文的是 RollTable 文档名，不是 CriticalInjuries 的 UI 标签。",
     "",
     "────────────────────────────────────────────────────────────────────────",
     "上游 cn.json 里还有 14 个删不掉的死键（2026-08-29 实测）",
@@ -101,8 +101,7 @@
     "ALIENRPG.OneShift",
     "ALIENRPG.OneDay",
     "ALIENRPG.Permanent",
-    "ALIENRPG.Shift",
-    "ALIENRPG.CriticalInjuries"
+    "ALIENRPG.Shift"
   ],
   "keep_english_reasons": {
     "_": "Phase 1 · lang-combat 切片补写。上面的 _README 讲的是**机制**（覆盖通道为什么删不掉键、为什么必须写英文影子），这一节讲的是**本阶段为什么是这八个键、以及什么时候解冻**。读取方（apply_lang / lang_gap / scan_cross_channel 的 load_keep_english）只认 keep_english 与 never_write 两个字段，本节是纯文档，不参与判定。",
@@ -127,7 +126,7 @@
     "ALIENRPG.OneDay": "比较侧。actor.mjs:1936，healTime=4。上游译作 一天，表格仍是 'One Day '，落空。",
     "ALIENRPG.Permanent": "比较侧，且是 **!==**：相等就**跳过**整段治愈时间解析（actor.mjs:1888）。这一格在结果串的最末尾，**没有尾随空格**。上游本来就留着英文，我们照写以压住后续漂移。",
     "ALIENRPG.Shift": "⚠ 本组里唯一**严格说可以翻**的一条，也是最容易搞反的一条。actor.mjs:1890 的 `testArray[9] === \"Shift\"` 是**裸英文字面量，比较侧没有 i18n 键**——要冻结的是**表格里那个格子**（EV - Critical Injuries 的 14-14 与 15-15 两行），不是这个键。actor.mjs:1891 才把 ALIENRPG.Shift 当**输出**写回 testArray[9]，glossary_alien.byrole.json 的 lang.value 角色给的目标值是 班。本阶段仍保持英文，理由是上面的 _scope：八个键作为一组在 Phase 5 一起翻转。⚑ 若 Phase 5 之前有人单独来翻它，那不是 bug——但要同时把它从本名单里摘出去，否则 apply_lang 的「译文与英文完全相同」判据会漏掉它。",
-    "ALIENRPG.CriticalInjuries": "不属于上面那八个的锁步组，机制不同：actor.mjs:1815 拿 game.tables.getName(localize('ALIENRPG.CriticalInjuries')) 去**查表名**，而两个内容包里那张表叫 'Critical injuries'（小写 i）。写成中文会让第一次查表落空，靠 :1816-1817 的 || 兜到第三个候选才命中。写上英文串是让第一次就命中。代价：config.mjs:143 那个「掷重伤」状态图标的提示文字也会显示英文。⇒ 改这张表的中文名之前，先回来改这里。跨仓 lockstep。"
+    "_released_2026_09_01_CriticalInjuries": "业主实机指出状态菜单漏成英文后复核：ALIENRPG.CriticalInjuries 不属于锁步组。actor.mjs:1815 的本地化查找即使因「重伤」落空，:1816-1817 仍会按两个冻结英文表名回退并命中。已从 keep_english 移除；config.mjs:143 的状态提示恢复为「重伤」。RollTable 文档名继续冻结英文。"
   },
   "never_write": {
     "ALIENRPG.EVCriticalInjuries": "上游 cn.json 里这个键的值是 JSON null。localization.mjs:437 的 `typeof translation !== \"string\"` 当场判它不算译文，:441 回落 _fallback，拿到 en.json 的 \"EV - Critical Injuries\" —— 与 2-/3- 两仓合集里那张表的名字逐字节相同，actor.mjs:1812 第一次 getName 就命中。我们再写一份英文副本没有任何收益，只多一处上游改名后会静默过期的冻结拷贝。所以：一个字都不写。"

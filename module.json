@@ -1,16 +1,16 @@
 {
   "id": "alienrpg-cn",
   "title": "Alien Evolved - 简体中文 [非官方]",
-  "description": "Alien Evolved（alienrpg）系统的非官方简体中文汉化中枢：覆盖系统界面字符串、翻译系统自带的 Alien RPG System 合集包、为 MU-TH-UR / Motion Tracker / Token Action Hud Alien / Babele 四个插件补中文语言文件、注入 CJK 字体回退，并注册全项目**唯一**的 Babele 全局 mapping 层。新手包与核心书的正文另有两个独立模块。Unofficial Simplified Chinese localization hub for the Alien Evolved system.",
+  "description": "Alien Evolved（alienrpg）系统的非官方简体中文汉化中枢：覆盖系统界面字符串、翻译系统自带的 Alien RPG System 合集包，为 MU-TH-UR / Motion Tracker / Token Action Hud Alien / Babele / YZE Combat 与 Evolved 特技补中文语言文件，注入 CJK 字体回退，并注册全项目唯一的 Babele 全局 mapping 层。新手包与核心书正文另有独立模块。Unofficial Simplified Chinese localization hub for the Alien Evolved system.",
   "authors": [
     {
       "name": "Taka"
     }
   ],
-  "version": "0.2.4",
+  "version": "0.2.5",
   "url": "https://github.com/takaqiao/alienrpg-cn",
   "manifest": "https://github.com/takaqiao/alienrpg-cn/releases/latest/download/module.json",
-  "download": "https://github.com/takaqiao/alienrpg-cn/releases/download/v0.2.4/module.zip",
+  "download": "https://github.com/takaqiao/alienrpg-cn/releases/download/v0.2.5/module.zip",
   "compatibility": {
     "minimum": "13",
     "verified": "14",
@@ -54,13 +54,13 @@
     },
     {
       "lang": "cn",
-      "name": "中文 (Evolved Starter Set 技能炫技)",
+      "name": "中文 (Evolved Starter Set 技能特技)",
       "path": "lang/plugins/evolved-stunts-cn.json",
       "module": "alien-evolved-starterset"
     },
     {
       "lang": "cn",
-      "name": "中文 (Evolved Core Rules 技能炫技)",
+      "name": "中文 (Evolved Core Rules 技能特技)",
       "path": "lang/plugins/evolved-stunts-cn.json",
       "module": "alien-evolved-corerules"
     },
@@ -99,5 +99,5 @@
     ]
   },
   "bugs": "https://github.com/takaqiao/alienrpg-cn/issues",
-  "changelog": "https://github.com/takaqiao/alienrpg-cn/releases/tag/v0.2.4"
+  "changelog": "https://github.com/takaqiao/alienrpg-cn/releases/tag/v0.2.5"
 }
