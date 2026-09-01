@@ -11,11 +11,17 @@
 Foundry VTT 的 **Alien Evolved**（`alienrpg`）系统简体中文汉化的**中枢模块**。
 界面字符串走 Foundry 原生 i18n，合集正文经 Babele 加载。
 
-> **当前状态：0.2.4 —— 系统层完整，插件已补齐，内容包只差核心书。**
+> **当前状态：0.2.5 —— 系统层完整，插件与新手包已补齐，内容包只差核心书。**
 >
 > ✅ **已完成**：系统界面 **600 个键**（`en.json` 的 590 个键覆盖 584 个，6 个有意保持英文）·
 > 系统自带合集 `alienrpg.alien-rpg-system` **全译**（81.8 KB：MU/TH/ER 使用说明 66K 字、
 > 三张恐慌/压力表、26 个物品、文件夹与宏名）· CJK 字体回退 · 运行时补丁。
+>
+> 🆕 **0.2.5：按实机反馈重裁状态与特技术语。** 状态栏改为
+> `Freezing → 受冻`、`Encumbered → 超重`、`Gravity Dyspraxia → 重力失调`；
+> `Critical Injuries` 的**界面状态标签**改为「重伤」，但代码查找用的 RollTable 名仍保持英文。
+> `Stunts → 特技`、`Skill-Stunts → 技能特技`，并同步系统合集、Evolved 插件语言文件、
+> 新手包正文与 12 个中文动态键别名。
 >
 > 🆕 **0.2.4：`yze-combat`（Year Zero Engine: Combat）界面全译**（80 键）。
 > 该模块是 alienrpg 系统**官方支持**的先攻方案 —— 系统自带
@@ -26,12 +32,12 @@ Foundry VTT 的 **Alien Evolved**（`alienrpg`）系统简体中文汉化的**�
 > YZE 通称是「慢速／快速动作」，经典版《异形》也用后者 —— 若你跑的是经典版，
 > 把 `YZEC.CombatTracker.SlowAction` 改回「慢速动作」即可。
 >
-> 🆕 **0.2.3：补上技能炫技与天赋正文。** `alien-evolved-starterset` 与
-> `alien-evolved-corerules` 各自带了 19 个 `ALIENRPG.*` 键（技能炫技清单 + 天赋描述），
+> 🆕 **0.2.3：补上技能特技与天赋正文。** `alien-evolved-starterset` 与
+> `alien-evolved-corerules` 各自带了 19 个 `ALIENRPG.*` 键（技能特技清单 + 天赋描述），
 > 系统自己的 `en.json` 里没有，此前**整类未译**。现由
 > `lang/plugins/evolved-stunts-cn.json` 提供，两个模块共用同一份（上游两包逐字节相同）。
 >
-> 同时修了一条**中文下必然失效**的查找：经典角色卡的炫技按钮用
+> 同时修了一条**中文下必然失效**的查找：经典角色卡的特技按钮用
 > 「已本地化的技能名」拼 key（`character-sheet.mjs:1113`），英文下
 > `Close Combat → ALIENRPG.CloseCombat` 正好命中，中文下拼出的是
 > `ALIENRPG.近战` —— 上游没有这个键。本版额外提供 12 个中文键别名，
@@ -46,8 +52,10 @@ Foundry VTT 的 **Alien Evolved**（`alienrpg`）系统简体中文汉化的**�
 > （`tah-alien-cn.json` 例外：Token Action Hud Alien 的标签本来就全是 `ALIENRPG.*` 键，
 > 翻了系统就等于翻了它，那份文件本来就该是空的，**现在也仍然是空的**。）
 >
-> ⬜ **尚未开工**：新手包（34 万字）与核心书（229 万字）的正文。
-> 那是另外两个模块的事，**装不装本模块都不影响**——本模块的系统层自己是完整可用的。
+> ✅ **新手包已完成**：34 万字原文对应的规则、剧本、角色、场景、图钉与图内文字均已汉化，
+> 由独立模块 `alien-evolved-starterset-cn` 出货。
+>
+> ⬜ **只剩核心书**（约 229 万字符）尚未汉化；本模块的系统层与插件层已经完整可用。
 >
 > ✅ **0.2.0 已按 v0.1.0 的实机反馈重排界面用词**：21 个压力/恐慌状态名与 12 个面板标签
 > 全部收成两字并**按各自的规则描述重新取名**（`搞砸`→`失误`、`失去物品`→`脱手`、
@@ -55,7 +63,7 @@ Foundry VTT 的 **Alien Evolved**（`alienrpg`）系统简体中文汉化的**�
 > 日志条目名也已可译（`MU/TH/ER 使用说明`，由译名回退垫片兜住上游 5 处按英文名查找）。
 >
 > ⚠ **仍未做过完整实机冒烟。** v0.1.0 得到过一轮用户反馈（已全部处理），但下列面仍未验证：
-> 首次导入的名称查找、经典模式下的技能炫技按钮、Evolved/Classic 双世界的标签覆盖
+> 首次导入的名称查找、经典模式下的技能特技按钮、Evolved/Classic 双世界的标签覆盖
 > 都还没有在真实世界里验证过。遇到问题请开 issue。
 
 ---
@@ -64,11 +72,11 @@ Foundry VTT 的 **Alien Evolved**（`alienrpg`）系统简体中文汉化的**�
 
 | 模块 | 仓库目录 | 装什么 | 何时需要 |
 |---|---|---|---|
-| **`alienrpg-cn`**（本仓） | `1-系统汉化插件/` | 系统界面译文、四个插件的语言文件、运行时补丁、CJK 字体、**全项目唯一的 Babele 全局 mapping 层**、系统自带的 `alienrpg.alien-rpg-system` 合集译文 | **始终需要** |
+| **`alienrpg-cn`**（本仓） | `1-系统汉化插件/` | 系统界面译文、六份插件语言文件（七个条件入口）、运行时补丁、CJK 字体、**全项目唯一的 Babele 全局 mapping 层**、系统自带的 `alienrpg.alien-rpg-system` 合集译文 | **始终需要** |
 | `alien-evolved-starterset-cn` | `2-新手包汉化插件/` | 新手包 `alien-evolved-starterset.alien-evolved-starter-set` 的译文 | 装了新手包才需要 |
 | `alien-evolved-corerules-cn` | `3-核心书汉化插件/` | 核心书 `alien-evolved-corerules.alien-evolved-core-rules` 的译文 | 装了核心书才需要 |
 
-拆开的理由不是技术边界，是**授权与生命周期边界**：`alien-evolved-corerules` 在它
+三个模块按授权和更新周期拆分：`alien-evolved-corerules` 在它
 自己的 `module.json` 里是 `"protected": true`（Free League 付费内容），对应译文必须
 能独立发布、独立撤下、独立打版本号。
 
@@ -103,6 +111,8 @@ https://github.com/takaqiao/alienrpg-cn/releases/latest/download/module.json
 | `lang/plugins/motiontracker-cn.json` | Motion Tracker 的中文语言文件 | ✅ |
 | `lang/plugins/tah-alien-cn.json` | Token Action Hud Alien 的落点（现为空，见下） | ✅ |
 | `lang/plugins/babele-cn.json` | Babele 自身设置界面的中文 | ✅ |
+| `lang/plugins/evolved-stunts-cn.json` | Starter Set / Core Rules 共用的技能特技与天赋正文（按两个模块分别门控） | ✅ |
+| `lang/plugins/yzecombat-cn.json` | YZE Combat 的中文界面（80 键） | ✅ |
 | `scripts/alienrpg-hardcoded-cn.mjs` | 系统侧写死串的运行时补丁 | ✅ |
 | `scripts/plugins-hardcoded-cn.mjs` | 插件侧写死串的运行时补丁 | ✅ |
 | `scripts/retranslate-world.mjs` | 「重新汉化本世界」原地修复工具（设置菜单按钮 + 模块 API） | ✅ |
@@ -130,7 +140,7 @@ https://github.com/takaqiao/alienrpg-cn/releases/latest/download/module.json
 最后 `:316-319` 按**推入顺序**（不是 resolve 顺序）逐个
 `foundry.utils.mergeObject(translations, json, {inplace:true})`。
 
-**后者胜**这四个字是有源码的，不是推断：`mergeObject` 的默认参数里
+后加载的翻译会覆盖已有值：`mergeObject` 的默认参数里
 `overwrite=true`（`common/utils/helpers.mjs:1126`），命中同名键时走 `:1163` 的
 `_mergeUpdate`，在 `:1219-1224` 直接 `original[k] = deepClone(v)`。
 所以模块的 `lang/cn.json` 会逐键盖掉系统的同名键。系统源文件一个字都不用改，
@@ -204,12 +214,15 @@ https://github.com/takaqiao/alienrpg-cn/releases/latest/download/module.json
 ```
 
 每条 `languages` 记录都可以带一个 `"module"` 门控：**目标模块没启用就整条跳过**。
-于是一个模块可以同时携带系统覆盖和四份插件语言文件，没装那些插件的世界零成本。
+于是一个模块可以同时携带系统覆盖和多份插件语言文件，没装目标插件的世界零成本。
 
-### `languages` 为什么是 5 条不是 6 条
+### `languages` 为什么是 8 条、但只有 7 份物理语言文件
 
-有 i18n 通道的只有这几个：系统覆盖 1 条 + `alien-mu-th-ur` / `motion_tracker` /
-`token-action-hud-alien` 3 条 + `babele` 自身 1 条 = **5 条**。
+清单现在声明：系统覆盖 1 条；`alien-mu-th-ur` / `motion_tracker` /
+`token-action-hud-alien` / `babele` / `yze-combat` 各 1 条；以及同一份
+`evolved-stunts-cn.json` 分别受 `alien-evolved-starterset` 与
+`alien-evolved-corerules` 门控的 2 条，合计 **8 个入口**。Evolved 两条共用一个文件，
+所以磁盘上是 **7 份语言文件**（系统 1 + 插件 6）。
 
 另两个周边插件**没有可声明的落点**（本机实测）：
 
@@ -226,7 +239,7 @@ https://github.com/takaqiao/alienrpg-cn/releases/latest/download/module.json
 `ALIENRPG.*` 与 `tokenActionHud.*` 两个**外部命名空间**的键 —— 翻译系统的
 `lang/cn.json` 就等于翻译了 HUD。这个文件保留为将来它自己长出键时的落点。
 
-### ⛔ `MOTHER.Keywords.*` 是命令词表，不是文案 —— 一个字都不许翻
+### `MOTHER.Keywords.*` 命令关键词须保留原文
 
 MU/TH/UR 终端的四个键 `MOTHER.Keywords.Ordre / Special / Special2 / Protocol`
 **必须与上游 `en.json` 逐字节相同**（`ORDER` / `SPECIAL` / `SPECIAL` / `PROTOCOL`）。
@@ -252,7 +265,7 @@ ASCII／法语正则剥前缀，**没有中文分支**。所以把它们译成�
 
 判据由 `4-常用脚本/qa/gate_plugin_lang.mjs` 的 P8 组盯死：除了逐字节比对，还顺带
 复核「读取点仍是这四个」「剥前缀链里仍然没有非 ASCII 分支」「`MOTHER.Keywords.`
-在 `main.js` 里仍然只出现 4 次（即仍然只用于解析）」—— 上游哪天改了，闸门先红。
+在 `main.js` 里仍然只出现 4 次（即仍然只用于解析）」；上游改变读取方式时，校验会失败。
 
 ---
 
@@ -416,7 +429,7 @@ Babele）的话，落地的文档全是英文名 —— 而此后**没有任何�
    于是整片正确译名被自己人挡掉（实测：三包环境下 172 条待办 / 32 条被挡 / 95 条跳过，
    而应有的是 299 条 / 0 条 / 3 条）。现在这类包会被静音，并在报告里点名。
 
-### 它**不**改什么（明说，不含糊）
+### 不修改的内容
 
 - **物品 / 角色的正文**（描述、笔记、天赋说明……）。这些字段的真实路径随
   `Item.type` 变（见 `babele-mappings.js` 的 `_variants`），在运行时重推一遍等于把 Babele 的
@@ -502,7 +515,7 @@ await game.modules.get("alienrpg-cn").api.openRetranslateDialog();
 `api.registerRepairSource("<包 collection>", "modules/<模块 id>/compendium/cn/<包 collection>.json")`
 显式登记；不登记也不会出错，只是那个包用不了「按名字兜底」，报告里会明说。
 
-### 闸门
+### 校验
 
 ```bash
 node "4-常用脚本/qa/gate_retranslate_world.mjs"
