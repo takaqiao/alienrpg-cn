@@ -668,5 +668,8 @@
   "alienrpgct": {
     "Inactive": "未激活效果",
     "Passive": "被动效果"
+  },
+  "COMBATANT": {
+    "CombatantMovementHistoryCleared": "已清除指示物“{name}”的移动历史。"
   }
 }
